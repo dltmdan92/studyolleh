@@ -29,7 +29,7 @@ public class SignUpFormValidator implements Validator {
 
     @Override
     public void validate(Object o, Errors errors) {
-        SignUpForm signUpForm = (SignUpForm) errors;
+        SignUpForm signUpForm = (SignUpForm) o;
         if (accountRepository.existsByEmail(signUpForm.getEmail())) {
             errors.rejectValue("email", "invalid.email", new Object[]{signUpForm.getEmail()}, "이미 사용중인 이메일입니다.");
         }

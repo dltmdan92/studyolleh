@@ -1,6 +1,10 @@
 package com.seungmoo.studyolleh.account;
 
+import com.seungmoo.studyolleh.domain.Account;
+import com.seungmoo.studyolleh.domain.ConsoleMailSender;
 import lombok.RequiredArgsConstructor;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
@@ -15,7 +19,9 @@ import javax.validation.Valid;
 @RequiredArgsConstructor
 public class AccountController {
 
-    private SignUpFormValidator signUpFormValidator;
+    private final SignUpFormValidator signUpFormValidator;
+    private final AccountRepository accountRepository;
+    private final JavaMailSender javaMailSender;
 
     /**
      * API로 signUpForm 데이터 받을 때, Binder 를 설정할 수 있다.
@@ -52,6 +58,31 @@ public class AccountController {
             return "account/sign-up";
         }
 
+        Account account = Account.builder()
+                .email(signUpForm.getEmail())
+                .nickname(signUpForm.getNickname())
+                // TODO encoding 반드시 해야함
+                .password(signUpForm.getPassword())
+                .studyCreatedByWeb(true)
+                .studyEnrollmentResultByWeb(true)
+                .studyUpdatedByWeb(true)
+                .build();
+        // NEW 회원 정보 저장
+        Account newAccount = accountRepository.save(account);
+
+        newAccount.generateEmailCheckToken();
+
+        // 이메일을 보내 봅시다.
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        // 받는 사람
+        mailMessage.setTo(newAccount.getEmail());
+        // 제목
+        mailMessage.setSubject("스터디올래, 회원 가입 인증");
+        // 본문
+        mailMessage.setText("/check-email-token" +
+                "?token="+newAccount.getEmailCheckToken()
+                +"&email="+newAccount.getEmail());
+        javaMailSender.send(mailMessage);
         return "redirect:/";
     }
 }
