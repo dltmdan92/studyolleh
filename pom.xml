@@ -90,6 +90,11 @@
             <version>6.1.5.Final</version>
         </dependency>
 
+        <!-- 타임리프 스프링 시큐리티 5 지원 확장팩 -->
+        <dependency>
+            <groupId>org.thymeleaf.extras</groupId>
+            <artifactId>thymeleaf-extras-springsecurity5</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
