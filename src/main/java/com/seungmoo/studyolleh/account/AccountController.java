@@ -1,5 +1,6 @@
 package com.seungmoo.studyolleh.account;
 
+import com.seungmoo.studyolleh.domain.Account;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -11,7 +12,10 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.security.auth.login.AccountNotFoundException;
 import javax.validation.Valid;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Controller
 @RequiredArgsConstructor
@@ -19,6 +23,7 @@ public class AccountController {
 
     private final SignUpFormValidator signUpFormValidator;
     private final AccountService accountService;
+    private final AccountRepository accountRepository;
 
     /**
      * API로 signUpForm 데이터 받을 때, Binder 를 설정할 수 있다.
@@ -60,5 +65,30 @@ public class AccountController {
         accountService.processNewAccount(signUpForm);
         mv.setViewName("redirect:/");
         return mv;
+    }
+
+    @GetMapping("/check-email-token")
+    public String checkEmailToken(String token, String email, Model model) {
+        Account account = accountRepository.findByEmail(email);
+        String view = "account/checked-email";
+        try {
+            // Null 체크 통과 한 account
+            Account nonNullAccount = Optional.ofNullable(account)
+                    .orElseThrow(AccountNotFoundException::new);
+
+            if (!nonNullAccount.getEmailCheckToken().equals(token)) {
+                model.addAttribute("error", "wrong.token");
+            }
+
+            nonNullAccount.setEmailVerified(true);
+            nonNullAccount.setJoinedAt(LocalDateTime.now());
+            // JpaResitory가 기본 제공하는 count() 메소드를 활용 가능하다.
+            model.addAttribute("numberOfUser", accountRepository.count());
+            model.addAttribute("nickname", nonNullAccount.getNickname());
+            return view;
+        } catch (AccountNotFoundException e) {
+            model.addAttribute("error", "wrong.email");
+            return view;
+        }
     }
 }

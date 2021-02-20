@@ -6,6 +6,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,9 +20,13 @@ public class AccountService {
      * 신규 회원 처리하는 process
      * @param signUpForm
      */
+    @Transactional // 이걸 붙여줌으로써 newAccount 인스턴스는 JPA Persistent 상태가 유지 된다.
     public void processNewAccount(SignUpForm signUpForm) {
+        // @Transactional 이 안 붙어 있으면 얘는 Detached 상태!!
         Account newAccount = saveNewAccount(signUpForm);
         // 이메일 확인 용 토큰 만들기
+        // 얘는 @Transactional 덕분에 여기서도 Persistent 상태 이기 떄문에 JPA의 LifeCycle 중 managed 상태이다.
+        // 그러므로 generateEmailCheckToken 메서드를 사용하면! --> JPA가 DB에도 알아서 반영을 해준다!!
         newAccount.generateEmailCheckToken();
         SimpleMailMessage mailMessage = sendSignUpConfirmEmail(newAccount);
         javaMailSender.send(mailMessage);
@@ -30,7 +35,7 @@ public class AccountService {
     /**
      * 회원 정보 저장
      * @param signUpForm
-     * @return 저장된 회원 정보 (Jpa managed 상태)
+     * @return 저장된 회원 정보
      */
     private Account saveNewAccount(SignUpForm signUpForm) {
         Account account = Account.builder()
@@ -44,6 +49,7 @@ public class AccountService {
                 .build();
         // NEW 회원 정보 저장
         Account newAccount = accountRepository.save(account);
+        // 여기 안에서 만큼은 newAccount는 Persistent 상태임. 그러나 이 메소드를 나가면! Detached 상태이다.
         return newAccount;
     }
 

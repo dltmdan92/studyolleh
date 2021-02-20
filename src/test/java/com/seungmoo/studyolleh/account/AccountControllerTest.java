@@ -78,6 +78,7 @@ class AccountControllerTest {
         Account byEmail = accountRepository.findByEmail("seungmoo@email.com");
         assertNotNull(byEmail);
         assertNotEquals(byEmail.getPassword(), "12345678");
+        assertNotNull(byEmail.getEmailCheckToken());
         System.out.println("hashed Password : " + byEmail.getPassword());
 
         // SimpleMailMessage --> 이거 Type의 Instance를 가지고 send()메서드가 호출이 되었는가를 검증
