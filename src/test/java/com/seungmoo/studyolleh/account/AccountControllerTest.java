@@ -16,6 +16,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.then;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
+import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -40,7 +42,8 @@ class AccountControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(view().name("account/sign-up"))
-                .andExpect(model().attributeExists("signUpForm"));
+                .andExpect(model().attributeExists("signUpForm"))
+                .andExpect(unauthenticated());
     }
 
     @DisplayName("회원 가입 처리 - 입력값 오류")
@@ -55,8 +58,9 @@ class AccountControllerTest {
                 .param("password", "12345")
                 .with(csrf())) // 이렇게 junit에서도 csrf token를 넣어서 테스트 가능하다!
                 .andDo(print())
-                    .andExpect(status().isBadRequest())
-                    .andExpect(view().name("account/sign-up"));
+                .andExpect(status().isBadRequest())
+                .andExpect(view().name("account/sign-up"))
+                .andExpect(unauthenticated());
     }
 
     @DisplayName("회원 가입 처리 - 입력값 정상")
@@ -71,8 +75,9 @@ class AccountControllerTest {
                 .param("password", "12345678")
                 .with(csrf())) // 이렇게 junit에서도 csrf token를 넣어서 테스트 가능하다!
                 .andDo(print())
-                    .andExpect(status().is3xxRedirection())
-                    .andExpect(view().name("redirect:/"));
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/"))
+                .andExpect(authenticated().withUsername("seungmoo"));
 
         assertTrue(accountRepository.existsByEmail("seungmoo@email.com"));
 
@@ -96,7 +101,9 @@ class AccountControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("error"))
-                .andExpect(view().name("account/checked-email"));
+                .andExpect(view().name("account/checked-email"))
+                // spring-boot에서 spring security 관련해서 mockMvc에 자동 설정 해준다.
+                .andExpect(unauthenticated());
     }
 
     @DisplayName("인증 메일 확인 - 입력값 정상 (이메일 토큰 값 체크)")
@@ -120,6 +127,7 @@ class AccountControllerTest {
                 .andExpect(model().attributeDoesNotExist("error"))
                 .andExpect(model().attributeExists("nickname"))
                 .andExpect(model().attributeExists("numberOfUser"))
-                .andExpect(view().name("account/checked-email"));
+                .andExpect(view().name("account/checked-email"))
+                .andExpect(authenticated().withUsername(account.getNickname()));
     }
 }

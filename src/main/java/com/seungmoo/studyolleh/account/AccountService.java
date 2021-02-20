@@ -4,9 +4,15 @@ import com.seungmoo.studyolleh.domain.Account;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -16,12 +22,15 @@ public class AccountService {
     private final JavaMailSender javaMailSender;
     private final PasswordEncoder passwordEncoder;
 
+    // 이거는 주입 받으려면 Spring-security 관련 별도 설정 필요함
+    //private final AuthenticationManager authenticationManager;
+
     /**
      * 신규 회원 처리하는 process
      * @param signUpForm
      */
     @Transactional // 이걸 붙여줌으로써 newAccount 인스턴스는 JPA Persistent 상태가 유지 된다.
-    public void processNewAccount(SignUpForm signUpForm) {
+    public Account processNewAccount(SignUpForm signUpForm) {
         // @Transactional 이 안 붙어 있으면 얘는 Detached 상태!!
         Account newAccount = saveNewAccount(signUpForm);
         // 이메일 확인 용 토큰 만들기
@@ -30,6 +39,7 @@ public class AccountService {
         newAccount.generateEmailCheckToken();
         SimpleMailMessage mailMessage = sendSignUpConfirmEmail(newAccount);
         javaMailSender.send(mailMessage);
+        return newAccount;
     }
 
     /**
@@ -70,5 +80,28 @@ public class AccountService {
                 "?token="+ newAccount.getEmailCheckToken()
                 +"&email="+ newAccount.getEmail());
         return mailMessage;
+    }
+
+    /**
+     * 로그인 처리
+     * @param account
+     */
+    public void login(Account account) {
+        // 이렇게 하는 건 정석은 아님, 참고
+        // 그냥 SimpleGrantedAuthority까지 바로 만들어서 SecurityContextHolder에 setAuthentication 함.
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
+                account.getNickname(),
+                account.getPassword(),
+                List.of(new SimpleGrantedAuthority("ROLE_USER")));
+
+        // 원래는 이렇게 하는 거임
+        /*
+        UsernamePasswordAuthenticationToken token1 = new UsernamePasswordAuthenticationToken(
+                account.getNickname(),
+                plainTextPassword // 원래 정석은 plainText로 받은 password를 써야 한다. BUT DB 저장 안하기 때문에 못쓴다.
+        );
+        authenticationManager.authenticate(token1);
+        */
+        SecurityContextHolder.getContext().setAuthentication(token);
     }
 }

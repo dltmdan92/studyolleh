@@ -62,32 +62,31 @@ public class AccountController {
             mv.setStatus(HttpStatus.BAD_REQUEST);
             return mv;
         }
-        accountService.processNewAccount(signUpForm);
+        Account account = accountService.processNewAccount(signUpForm);
+        accountService.login(account);
         mv.setViewName("redirect:/");
         return mv;
     }
 
     @GetMapping("/check-email-token")
     public String checkEmailToken(String token, String email, Model model) {
-        Account account = accountRepository.findByEmail(email);
+        Account account;
         String view = "account/checked-email";
         try {
             // Null 체크 통과 한 account
-            Account nonNullAccount = Optional.ofNullable(account)
+            account = Optional.ofNullable(accountRepository.findByEmail(email))
                     .orElseThrow(AccountNotFoundException::new);
-
-            if (!nonNullAccount.getEmailCheckToken().equals(token)) {
+            if (!account.isValidToken(token)) {
                 model.addAttribute("error", "wrong.token");
             }
-            nonNullAccount.completeSignUp();
-
+            account.completeSignUp();
+            accountService.login(account);
             // JpaResitory가 기본 제공하는 count() 메소드를 활용 가능하다.
             model.addAttribute("numberOfUser", accountRepository.count());
-            model.addAttribute("nickname", nonNullAccount.getNickname());
-            return view;
+            model.addAttribute("nickname", account.getNickname());
         } catch (AccountNotFoundException e) {
             model.addAttribute("error", "wrong.email");
-            return view;
         }
+        return view;
     }
 }
