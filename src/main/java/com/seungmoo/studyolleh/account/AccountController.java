@@ -3,6 +3,7 @@ package com.seungmoo.studyolleh.account;
 import com.seungmoo.studyolleh.domain.Account;
 import com.seungmoo.studyolleh.domain.ConsoleMailSender;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Controller;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.validation.Valid;
 
@@ -20,8 +22,7 @@ import javax.validation.Valid;
 public class AccountController {
 
     private final SignUpFormValidator signUpFormValidator;
-    private final AccountRepository accountRepository;
-    private final JavaMailSender javaMailSender;
+    private final AccountService accountService;
 
     /**
      * API로 signUpForm 데이터 받을 때, Binder 를 설정할 수 있다.
@@ -50,39 +51,18 @@ public class AccountController {
     /**
      *
      * @param signUpForm  @ModelAttribute annotation은 생략 가능
-     * @return
+     * @return 정상 : redirect, error : account/sign-up 페이지
      */
     @PostMapping("/sign-up")
-    public String signUpSubmit(@Valid SignUpForm signUpForm, Errors errors) {
+    public ModelAndView signUpSubmit(@Valid SignUpForm signUpForm, Errors errors) {
+        ModelAndView mv = new ModelAndView();
         if (errors.hasErrors()) {
-            return "account/sign-up";
+            mv.setViewName("account/sign-up");
+            mv.setStatus(HttpStatus.BAD_REQUEST);
+            return mv;
         }
-
-        Account account = Account.builder()
-                .email(signUpForm.getEmail())
-                .nickname(signUpForm.getNickname())
-                // TODO encoding 반드시 해야함
-                .password(signUpForm.getPassword())
-                .studyCreatedByWeb(true)
-                .studyEnrollmentResultByWeb(true)
-                .studyUpdatedByWeb(true)
-                .build();
-        // NEW 회원 정보 저장
-        Account newAccount = accountRepository.save(account);
-
-        newAccount.generateEmailCheckToken();
-
-        // 이메일을 보내 봅시다.
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        // 받는 사람
-        mailMessage.setTo(newAccount.getEmail());
-        // 제목
-        mailMessage.setSubject("스터디올래, 회원 가입 인증");
-        // 본문
-        mailMessage.setText("/check-email-token" +
-                "?token="+newAccount.getEmailCheckToken()
-                +"&email="+newAccount.getEmail());
-        javaMailSender.send(mailMessage);
-        return "redirect:/";
+        accountService.processNewAccount(signUpForm);
+        mv.setViewName("redirect:/");
+        return mv;
     }
 }
