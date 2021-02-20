@@ -79,9 +79,8 @@ public class AccountController {
             if (!nonNullAccount.getEmailCheckToken().equals(token)) {
                 model.addAttribute("error", "wrong.token");
             }
+            nonNullAccount.completeSignUp();
 
-            nonNullAccount.setEmailVerified(true);
-            nonNullAccount.setJoinedAt(LocalDateTime.now());
             // JpaResitory가 기본 제공하는 count() 메소드를 활용 가능하다.
             model.addAttribute("numberOfUser", accountRepository.count());
             model.addAttribute("nickname", nonNullAccount.getNickname());
