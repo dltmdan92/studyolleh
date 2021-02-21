@@ -26,6 +26,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) throws Exception {
         // static resource는 Spring Security Filter 적용하지 말 것.
         web.ignoring()
+                // node_modules에 있는 것들도 Spring Securty에 걸린다.
+                // atCommonLocations에 보면 /node_modules는 없음, 별도 설정해준다.
+                .mvcMatchers("/node_modules/**")
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations());
     }
 }
