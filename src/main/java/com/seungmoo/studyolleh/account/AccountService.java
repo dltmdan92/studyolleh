@@ -90,7 +90,7 @@ public class AccountService {
         // 이렇게 하는 건 정석은 아님, 참고
         // 그냥 SimpleGrantedAuthority까지 바로 만들어서 SecurityContextHolder에 setAuthentication 함.
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                account.getNickname(),
+                new UserAccount(account),
                 account.getPassword(),
                 List.of(new SimpleGrantedAuthority("ROLE_USER")));
 
