@@ -37,8 +37,7 @@ public class AccountService {
         // 얘는 @Transactional 덕분에 여기서도 Persistent 상태 이기 떄문에 JPA의 LifeCycle 중 managed 상태이다.
         // 그러므로 generateEmailCheckToken 메서드를 사용하면! --> JPA가 DB에도 알아서 반영을 해준다!!
         newAccount.generateEmailCheckToken();
-        SimpleMailMessage mailMessage = sendSignUpConfirmEmail(newAccount);
-        javaMailSender.send(mailMessage);
+        sendSignUpConfirmEmail(newAccount);
         return newAccount;
     }
 
@@ -68,7 +67,7 @@ public class AccountService {
      * @param newAccount 저장된 회원 정보, 이 회원 정보를 통해 회원 가입 확인 용 E-mail을 보낸다.
      * @return mailMessage
      */
-    private SimpleMailMessage sendSignUpConfirmEmail(Account newAccount) {
+    public void sendSignUpConfirmEmail(Account newAccount) {
         // 이메일을 보내 봅시다.
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         // 받는 사람
@@ -79,7 +78,8 @@ public class AccountService {
         mailMessage.setText("/check-email-token" +
                 "?token="+ newAccount.getEmailCheckToken()
                 +"&email="+ newAccount.getEmail());
-        return mailMessage;
+
+        javaMailSender.send(mailMessage);
     }
 
     /**

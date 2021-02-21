@@ -89,4 +89,25 @@ public class AccountController {
         }
         return view;
     }
+
+    @GetMapping("/check-email")
+    public String checkEmail(@CurrentUser Account account, Model model) {
+        model.addAttribute("email", account.getEmail());
+        return "account/check-email";
+    }
+
+    @GetMapping("/resend-confirm-email")
+    public String resendConfirmEmail(@CurrentUser Account account, Model model) {
+        if (!account.canSendConfirmEmail()) {
+            model.addAttribute("error", "인증 이메일은 1시간에 한번만 전송할 수 있습니다.");
+            model.addAttribute("email", account.getEmail());
+            return "account/check-email";
+        }
+
+        accountService.sendSignUpConfirmEmail(account);
+        // /resend-confirm-email 를 계속 리로딩 했을 경우, 이메일 계속 호출 또는 로직 실행될 수 있음.
+        // redirect 시켜서 이런 걸 방지하도록 하자.
+        return "redirect:/";
+    }
+
 }
