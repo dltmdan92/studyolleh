@@ -20,6 +20,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers(HttpMethod.GET, "/profile/*").permitAll() // 얘는 GET 만 허용
                 .anyRequest().authenticated() // 나머지 요청들은 로그인 해야 만 접근 가능
                 ;
+
+        // form 로그인 기능 활성화
+        http.formLogin()
+                // loginPage 셋팅안하면, 그냥 스프링 시큐리티의 기본적인 페이지로 제공한다.
+                // loginPage : 우리가 커스텀하게 셋팅한 로그인페이지
+                .loginPage("/login").permitAll();
+
+        http.logout()
+                // 로그아웃 했을 때 어디로 갈지
+                .logoutSuccessUrl("/");
     }
 
     @Override
