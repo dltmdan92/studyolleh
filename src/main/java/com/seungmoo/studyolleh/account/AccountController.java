@@ -9,6 +9,7 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -44,7 +45,7 @@ public class AccountController {
          * spring security config를 별도로 해줘야 한다.
          */
         //model.addAttribute("signUpForm", new SignUpForm());
-        // 위의 코드를 아래와 같이 축약 가능하다. (해당하는 객체의 camelCase로 attribute가 생성된다.)
+        // 위의 코드를 아래와 같이 축약 가능하다. (해당하는 객체 Type의 camelCase로 attribute가 생성된다.)
         model.addAttribute(new SignUpForm());
         return "account/sign-up";
     }
@@ -108,6 +109,21 @@ public class AccountController {
         // /resend-confirm-email 를 계속 리로딩 했을 경우, 이메일 계속 호출 또는 로직 실행될 수 있음.
         // redirect 시켜서 이런 걸 방지하도록 하자.
         return "redirect:/";
+    }
+
+    @GetMapping("/profile/{nickname}")
+    public String viewProfile(@PathVariable String nickname, Model model, @CurrentUser Account account) {
+        Account byNickname = accountRepository.findByNickname(nickname);
+        if (nickname == null) {
+            throw new IllegalArgumentException(nickname + "에 해당하는 사용자가 없습니다.");
+        }
+
+        // model.addAttribute("account", byNickname);
+        // 이 attribute는 위와 똑같이 "account"로 naming 된다.
+        // attr의 이름을 주지 않으면, 해당 객체 타입의 CamelCase로 naming
+        model.addAttribute(byNickname);
+        model.addAttribute("isOwner", byNickname.equals(account));
+        return "account/profile";
     }
 
 }
