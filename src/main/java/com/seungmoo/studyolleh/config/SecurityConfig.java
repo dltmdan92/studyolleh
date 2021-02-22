@@ -1,16 +1,27 @@
 package com.seungmoo.studyolleh.config;
 
+import com.seungmoo.studyolleh.account.AccountService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+
+import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity // spring security 설정을 내가 하겠다 라고 설정
+@RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    private final AccountService accountService;
+    private final DataSource dataSource;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -30,6 +41,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.logout()
                 // 로그아웃 했을 때 어디로 갈지
                 .logoutSuccessUrl("/");
+
+        http.rememberMe()
+                .userDetailsService(accountService)
+                .tokenRepository(tokenRepository());
+    }
+
+    // DB에 username, series(불변 해쉬값), token(가변 해쉬값)을 저장함으로써
+    // 영속적인 로그인 rememberMe를 설정한다.
+    @Bean
+    public PersistentTokenRepository tokenRepository() {
+        // Jdbc 기반의 Token Repository 구현체
+        JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
+        jdbcTokenRepository.setDataSource(dataSource);
+        return jdbcTokenRepository;
     }
 
     @Override
