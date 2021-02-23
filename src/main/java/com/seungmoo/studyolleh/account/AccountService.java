@@ -17,6 +17,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 엔티티 객체의 정보 변경은 반드시!! Transaction안에서 수행해야
+ * 영속성 컨텍스트에서 Persistent한 상태로 엔티티가 관리되고, DB 반영된다.
+ *
+ * 데이터 조회는 굳이 Transaction 안에서 할 필요는 없다.
+ *
+ * Repository를 사용하면 기본적으로 SimpleJpaRepository(구현체)가 Transactional 선언하므로
+ * 트랜잭션 적용
+ */
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class AccountService implements UserDetailsService {
@@ -108,6 +118,8 @@ public class AccountService implements UserDetailsService {
         SecurityContextHolder.getContext().setAuthentication(token);
     }
 
+    // readOnlu해주면 write Lock을 안씀
+    @Transactional(readOnly = true)
     @Override
     public UserDetails loadUserByUsername(String emailOrNickname) throws UsernameNotFoundException {
 
@@ -115,5 +127,10 @@ public class AccountService implements UserDetailsService {
                 .orElse(accountRepository.findByNickname(emailOrNickname));
         Optional.ofNullable(account).orElseThrow(() -> new UsernameNotFoundException(emailOrNickname));
         return new UserAccount(account);
+    }
+
+    public void completeSignUp(Account account) {
+        account.completeSignUp();
+        login(account);
     }
 }

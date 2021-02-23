@@ -4,6 +4,7 @@ import com.seungmoo.studyolleh.domain.Account;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.TransactionExecution;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.WebDataBinder;
@@ -80,8 +81,15 @@ public class AccountController {
             if (!account.isValidToken(token)) {
                 model.addAttribute("error", "wrong.token");
             }
-            account.completeSignUp();
-            accountService.login(account);
+
+            // completeSignUp을 통해 발생한 객체의 변경사항이 DB에 반영안된다.
+            // EntityManager가 영속성 컨텍스트에서 Persistent 객체들을 관리함. 트랜잭션이 종료될 떄 DB에 반영해줌 (update query)
+            // 트랜잭션안에서 일어난 사항만 변경사항을 관리한다. (트랜잭션 셋팅을 안해주면, 변경 반영이 없다..)
+            // 아래 두개는 AccountService로 옮기고 transaction 관리를 해주도록 하자.
+            // 그리고 뷰 랜더링 할 떄까지 영속성 컨텍스트를 유지함
+            /*account.completeSignUp();
+            accountService.login(account);*/
+            accountService.completeSignUp(account);
             // JpaResitory가 기본 제공하는 count() 메소드를 활용 가능하다.
             model.addAttribute("numberOfUser", accountRepository.count());
             model.addAttribute("nickname", account.getNickname());
@@ -125,5 +133,7 @@ public class AccountController {
         model.addAttribute("isOwner", byNickname.equals(account));
         return "account/profile";
     }
+
+
 
 }
