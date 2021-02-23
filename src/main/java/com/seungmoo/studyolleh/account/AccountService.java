@@ -1,6 +1,7 @@
 package com.seungmoo.studyolleh.account;
 
 import com.seungmoo.studyolleh.domain.Account;
+import com.seungmoo.studyolleh.settings.Profile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -132,5 +133,15 @@ public class AccountService implements UserDetailsService {
     public void completeSignUp(Account account) {
         account.completeSignUp();
         login(account);
+    }
+
+    public void updateProfile(Account account, Profile profile) {
+        account.setUrl(profile.getUrl());
+        account.setOccupation(profile.getOccupation());
+        account.setLocation(profile.getLocation());
+        account.setBio(profile.getBio());
+        // 이렇게 repository 통해서 save 실행해주면
+        // 해당 Detached 상태의 account 객체를 DB에 업데이트 쳐준다.
+        accountRepository.save(account);
     }
 }

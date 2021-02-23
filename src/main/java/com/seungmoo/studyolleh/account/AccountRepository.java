@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 // readOnly를 써서 write Lock 방지 토록 한다. (성능)
+// 주의!!!!  아래 우리가 만든 method도 transaction 처리할려면 @Transactional 꼭! 달아주도록
 @Transactional(readOnly = true)
 public interface AccountRepository extends JpaRepository<Account, Long> {
     boolean existsByEmail(String email);

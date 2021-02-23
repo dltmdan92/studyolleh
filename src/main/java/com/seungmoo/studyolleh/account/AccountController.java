@@ -76,6 +76,7 @@ public class AccountController {
         String view = "account/checked-email";
         try {
             // Null 체크 통과 한 account
+            // 이 녀석은 Persistent한 객체 이다. 영속성 컨텍스트에서 관리가 되는 객체임.
             account = Optional.ofNullable(accountRepository.findByEmail(email))
                     .orElseThrow(AccountNotFoundException::new);
             if (!account.isValidToken(token)) {
