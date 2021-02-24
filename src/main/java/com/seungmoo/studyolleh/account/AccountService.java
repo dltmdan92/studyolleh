@@ -145,4 +145,12 @@ public class AccountService implements UserDetailsService {
         // 해당 Detached 상태의 account 객체를 DB에 업데이트 쳐준다.
         accountRepository.save(account);
     }
+
+    public void updatePassword(Account account, String newPassword) {
+        // 현재 account는 Detached 상태임!
+        // 반드시 패스워드 인코딩 할 것.
+        account.setPassword(passwordEncoder.encode(newPassword));
+        // 이렇게 명시적으로 save 해줘야 다시 persistent 상태
+        accountRepository.save(account);
+    }
 }
