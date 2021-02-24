@@ -140,6 +140,7 @@ public class AccountService implements UserDetailsService {
         account.setOccupation(profile.getOccupation());
         account.setLocation(profile.getLocation());
         account.setBio(profile.getBio());
+        account.setProfileImage(profile.getProfileImage());
         // 이렇게 repository 통해서 save 실행해주면
         // 해당 Detached 상태의 account 객체를 DB에 업데이트 쳐준다.
         accountRepository.save(account);
