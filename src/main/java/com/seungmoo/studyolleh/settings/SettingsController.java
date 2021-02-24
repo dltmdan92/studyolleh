@@ -18,11 +18,11 @@ import javax.validation.Valid;
 @RequiredArgsConstructor
 public class SettingsController {
 
-    private static final String SETTINGS_PROFILE_VIEW_NAME = "settings/profile";
-    private static final String SETTINGS_PROFILE_URL = "/settings/profile";
+    static final String SETTINGS_PROFILE_VIEW_NAME = "settings/profile";
+    static final String SETTINGS_PROFILE_URL = "/settings/profile";
     private final AccountService accountService;
 
-    @GetMapping("/settings/profile")
+    @GetMapping(SETTINGS_PROFILE_URL)
     public String profileUpdateForm(@CurrentUser Account account, Model model) {
         model.addAttribute(account);
         model.addAttribute(new Profile(account));
@@ -30,7 +30,7 @@ public class SettingsController {
     }
 
     // @ModelAttribute -> 생략 가능
-    @PostMapping("/settings/profile")
+    @PostMapping(SETTINGS_PROFILE_URL)
     public String updateProfile(@CurrentUser Account account, @Valid @ModelAttribute Profile profile, Errors errors,
                                 Model model, RedirectAttributes attributes) {
         if (errors.hasErrors()) {
@@ -47,6 +47,7 @@ public class SettingsController {
         // Detached는 아무리 변경해도 관리하지 않는다. 이거를 다시 Jpa에서 영속성 관리를 해줄려면?? --> accountRepository.save(account)
         // save 구현체에서 Id값을 보고 Id값이 있으면 Merge를 시킨다. 즉, 기존 데이터에 update를 시킨다.
         accountService.updateProfile(account, profile);
+        // 리다이렉트 하는 핸들러에도 attr을 유지 --> FlashAttribute
         attributes.addFlashAttribute("message", "프로필을 수정했습니다.");
         return "redirect:" + SETTINGS_PROFILE_URL;
     }
