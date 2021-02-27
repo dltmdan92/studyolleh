@@ -5,10 +5,7 @@ import com.seungmoo.studyolleh.account.AccountRepository;
 import com.seungmoo.studyolleh.account.AccountService;
 import com.seungmoo.studyolleh.account.SignUpForm;
 import com.seungmoo.studyolleh.domain.Account;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -35,16 +33,18 @@ class SettingsControllerTest {
     @Autowired
     AccountRepository accountRepository;
 
-    //@BeforeEach
+    @BeforeEach
     void beforeEach() {
-        SignUpForm signUpForm = new SignUpForm();
-        signUpForm.setNickname("seungmoo");
-        signUpForm.setEmail("seungmoo@naver.com");
-        signUpForm.setPassword("12345678");
-        accountService.processNewAccount(signUpForm);
+        if (accountRepository.findByNickname("seungmoo") == null) {
+            SignUpForm signUpForm = new SignUpForm();
+            signUpForm.setNickname("seungmoo");
+            signUpForm.setEmail("seungmoo@naver.com");
+            signUpForm.setPassword("12345678");
+            accountService.processNewAccount(signUpForm);
+        }
     }
 
-    @AfterEach
+    //@AfterEach
     void afterEach() {
         accountRepository.deleteAll();
     }
@@ -71,10 +71,11 @@ class SettingsControllerTest {
     }
 
     /**
-     * 이거 실행할 때는 위의 @BeforeEach 꺼놓을 것!!!
+     * @WithAccount 이거 실행할 때는 위의 @BeforeEach 꺼놓을 것!!!
      * @throws Exception
      */
-    @WithAccount("seungmoo")
+    //@WithAccount("seungmoo")
+    @WithUserDetails(value = "seungmoo", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @DisplayName("프로필 수정하기 - 입력값 정상, 커스텀 애노테이션 사용(WithAccountSecurityContextFactory 활용)")
     @Test
     void updateProfileCustomAnno() throws Exception {
@@ -96,7 +97,8 @@ class SettingsControllerTest {
      * 이거 실행할 때는 위의 @BeforeEach 꺼놓을 것!!!
      * @throws Exception
      */
-    @WithAccount("seungmoo")
+    //@WithAccount("seungmoo")
+    @WithUserDetails(value = "seungmoo", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @DisplayName("프로필 수정하기 - 입력값 에러 (커스텀 애노테이션)")
     @Test
     void updateProfileCustomAnno_ERROR() throws Exception {
@@ -114,6 +116,44 @@ class SettingsControllerTest {
 
         Account seungmoo = accountRepository.findByNickname("seungmoo");
         assertNotNull(seungmoo);
+    }
+
+    //@WithAccount("seungmoo")
+    @WithUserDetails(value = "seungmoo", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("패스워드 수정 폼")
+    @Test
+    void updatePassword_form() throws Exception {
+        mockMvc.perform(get(SettingsController.SETTINGS_PASSOWRD_URL))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("account"))
+                .andExpect(model().attributeExists("passwordForm"));
+    }
+
+    //@WithAccount("seungmoo")
+    @WithUserDetails(value = "seungmoo", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("패스워드 수정 - 입력값 정상")
+    @Test
+    void updatePassword_success() throws Exception {
+        mockMvc.perform(post(SettingsController.SETTINGS_PASSOWRD_URL)
+                .param("newPassword", "123456789")
+                .param("newPasswordConfirm", "123456789")
+                .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(SettingsController.SETTINGS_PASSOWRD_URL))
+                .andExpect(flash().attributeExists("message"));
+    }
+
+    //@WithAccount("seungmoo")
+    @WithUserDetails(value = "seungmoo", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("패스워드 수정 - 입력값 오류")
+    @Test
+    void updatePassword_fail() throws Exception {
+        mockMvc.perform(post(SettingsController.SETTINGS_PASSOWRD_URL)
+                .param("newPassword", "123456789")
+                .param("newPasswordConfirm", "12345678923")
+                .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(view().name(SettingsController.SETTINGS_PASSOWRD_VIEW_NAME));
     }
 
 }
