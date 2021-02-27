@@ -4,6 +4,7 @@ import com.seungmoo.studyolleh.domain.Account;
 import com.seungmoo.studyolleh.settings.Notifications;
 import com.seungmoo.studyolleh.settings.Profile;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -37,6 +38,7 @@ public class AccountService implements UserDetailsService {
     private final AccountRepository accountRepository;
     private final JavaMailSender javaMailSender;
     private final PasswordEncoder passwordEncoder;
+    private final ModelMapper modelMapper;
 
     // 이거는 주입 받으려면 Spring-security 관련 별도 설정 필요함
     //private final AuthenticationManager authenticationManager;
@@ -138,11 +140,15 @@ public class AccountService implements UserDetailsService {
     }
 
     public void updateProfile(Account account, Profile profile) {
-        account.setUrl(profile.getUrl());
+        // 모델 맵핑 source -> destination
+        // 이렇게 하면 profile의 내용이 account 인스턴스에 반영이 된다. 아래 set Code들이 필요 없어진다.
+        modelMapper.map(profile, account);
+        /*account.setUrl(profile.getUrl());
         account.setOccupation(profile.getOccupation());
         account.setLocation(profile.getLocation());
         account.setBio(profile.getBio());
-        account.setProfileImage(profile.getProfileImage());
+        account.setProfileImage(profile.getProfileImage());*/
+
         // 이렇게 repository 통해서 save 실행해주면
         // 해당 Detached 상태의 account 객체를 DB에 업데이트 쳐준다.
         accountRepository.save(account);
@@ -157,12 +163,13 @@ public class AccountService implements UserDetailsService {
     }
 
     public void updateNotifications(Account account, Notifications notifications) {
-        account.setStudyCreatedByEmail(notifications.isStudyCreatedByEmail());
+        modelMapper.map(notifications, account);
+        /*account.setStudyCreatedByEmail(notifications.isStudyCreatedByEmail());
         account.setStudyCreatedByWeb(notifications.isStudyCreatedByWeb());
         account.setStudyUpdatedByEmail(notifications.isStudyUpdatedByEmail());
         account.setStudyUpdatedByWeb(notifications.isStudyUpdatedByWeb());
         account.setStudyEnrollmentResultByEmail(notifications.isStudyEnrollmentResultByEmail());
-        account.setStudyEnrollmentResultByWeb(notifications.isStudyEnrollmentResultByWeb());
+        account.setStudyEnrollmentResultByWeb(notifications.isStudyEnrollmentResultByWeb());*/
         accountRepository.save(account);
     }
 }

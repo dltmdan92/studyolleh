@@ -4,6 +4,7 @@ import com.seungmoo.studyolleh.account.AccountService;
 import com.seungmoo.studyolleh.account.CurrentUser;
 import com.seungmoo.studyolleh.domain.Account;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
@@ -22,7 +23,6 @@ public class SettingsController {
 
     static final String SETTINGS_PROFILE_VIEW_NAME = "settings/profile";
     static final String SETTINGS_PROFILE_URL = "/settings/profile";
-
     static final String SETTINGS_PASSOWRD_VIEW_NAME = "settings/password";
     static final String SETTINGS_PASSOWRD_URL = "/settings/password";
     static final String SETTINGS_NOTIFICATIONS_URL = "settings/notifications";
@@ -30,6 +30,7 @@ public class SettingsController {
 
     private final AccountService accountService;
     private final PasswordFormValidator passwordFormValidator;
+    private final ModelMapper modelMapper;
 
     @InitBinder("passwordForm")
     public void initBinder(WebDataBinder webDataBinder) {
@@ -39,7 +40,9 @@ public class SettingsController {
     @GetMapping(SETTINGS_PROFILE_URL)
     public String profileUpdateForm(@CurrentUser Account account, Model model) {
         model.addAttribute(account);
-        model.addAttribute(new Profile(account));
+        //model.addAttribute(new Profile(account));
+        // account -> profile
+        model.addAttribute(modelMapper.map(account, Profile.class));
         return SETTINGS_PROFILE_VIEW_NAME;
     }
 
@@ -89,7 +92,8 @@ public class SettingsController {
     @GetMapping(SETTINGS_NOTIFICATIONS_URL)
     public String updateNotificationsForm(@CurrentUser Account account, Model model) {
         model.addAttribute(account);
-        model.addAttribute(new Notifications(account));
+        //model.addAttribute(new Notifications(account));
+        model.addAttribute(modelMapper.map(account, Notifications.class));
         return SETTINGS_NOTIFICATIONS_VIEW_NAME;
     }
 
