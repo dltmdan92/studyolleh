@@ -1,6 +1,7 @@
 package com.seungmoo.studyolleh.account;
 
 import com.seungmoo.studyolleh.domain.Account;
+import com.seungmoo.studyolleh.settings.Notifications;
 import com.seungmoo.studyolleh.settings.Profile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -151,6 +153,16 @@ public class AccountService implements UserDetailsService {
         // 반드시 패스워드 인코딩 할 것.
         account.setPassword(passwordEncoder.encode(newPassword));
         // 이렇게 명시적으로 save 해줘야 다시 persistent 상태
+        accountRepository.save(account);
+    }
+
+    public void updateNotifications(Account account, Notifications notifications) {
+        account.setStudyCreatedByEmail(notifications.isStudyCreatedByEmail());
+        account.setStudyCreatedByWeb(notifications.isStudyCreatedByWeb());
+        account.setStudyUpdatedByEmail(notifications.isStudyUpdatedByEmail());
+        account.setStudyUpdatedByWeb(notifications.isStudyUpdatedByWeb());
+        account.setStudyEnrollmentResultByEmail(notifications.isStudyEnrollmentResultByEmail());
+        account.setStudyEnrollmentResultByWeb(notifications.isStudyEnrollmentResultByWeb());
         accountRepository.save(account);
     }
 }

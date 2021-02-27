@@ -48,17 +48,17 @@ public class Account {
     private String profileImage;
 
     // 스터디 생성,등록,수정 이벤트를 어떻게 받을 지?? email or web
-    private boolean studyCreatedByEmail;
+    private boolean studyCreatedByEmail = false;
 
-    private boolean studyCreatedByWeb;
+    private boolean studyCreatedByWeb = true;
 
-    private boolean studyEnrollmentResultByEmail;
+    private boolean studyEnrollmentResultByEmail = false;
 
-    private boolean studyEnrollmentResultByWeb;
+    private boolean studyEnrollmentResultByWeb = true;
 
-    private boolean studyUpdatedByEmail;
+    private boolean studyUpdatedByEmail = false;
 
-    private boolean studyUpdatedByWeb;
+    private boolean studyUpdatedByWeb = true;
 
     private LocalDateTime emailCheckTokenGeneratedAt;
 
