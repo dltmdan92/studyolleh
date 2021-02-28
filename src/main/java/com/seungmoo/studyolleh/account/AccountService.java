@@ -2,8 +2,10 @@ package com.seungmoo.studyolleh.account;
 
 import com.seungmoo.studyolleh.domain.Account;
 import com.seungmoo.studyolleh.domain.Tag;
+import com.seungmoo.studyolleh.domain.Zone;
 import com.seungmoo.studyolleh.settings.form.Notifications;
 import com.seungmoo.studyolleh.settings.form.Profile;
+import com.seungmoo.studyolleh.zone.ZoneRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.mail.SimpleMailMessage;
@@ -40,6 +42,7 @@ public class AccountService implements UserDetailsService {
     private final JavaMailSender javaMailSender;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
+    private final ZoneRepository zoneRepository;
 
     // 이거는 주입 받으려면 Spring-security 관련 별도 설정 필요함
     //private final AuthenticationManager authenticationManager;
@@ -210,5 +213,20 @@ public class AccountService implements UserDetailsService {
     public void removeTag(Account account, Tag tag) {
         Optional<Account> byId = accountRepository.findById(account.getId());
         byId.ifPresent(a -> a.getTags().remove(tag));
+    }
+
+    public Set<Zone> getZones(Account account) {
+        Optional<Account> byId = accountRepository.findById(account.getId());
+        return byId.get().getZones();
+    }
+
+    public void addZone(Account account, Zone zone) {
+        Optional<Account> byId = accountRepository.findById(account.getId());
+        byId.ifPresent(a -> a.getZones().add(zone));
+    }
+
+    public void removeZone(Account account, Zone zone) {
+        Optional<Account> byId = accountRepository.findById(account.getId());
+        byId.ifPresent(a -> a.getZones().remove(zone));
     }
 }

@@ -6,11 +6,14 @@ import com.seungmoo.studyolleh.account.AccountService;
 import com.seungmoo.studyolleh.account.CurrentUser;
 import com.seungmoo.studyolleh.domain.Account;
 import com.seungmoo.studyolleh.domain.Tag;
+import com.seungmoo.studyolleh.domain.Zone;
 import com.seungmoo.studyolleh.settings.form.*;
 import com.seungmoo.studyolleh.settings.validator.NicknameValidator;
 import com.seungmoo.studyolleh.settings.validator.PasswordFormValidator;
 import com.seungmoo.studyolleh.tag.TagRepository;
+import com.seungmoo.studyolleh.zone.ZoneRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -22,24 +25,31 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class SettingsController {
 
     static final String SETTINGS_PROFILE_VIEW_NAME = "settings/profile";
     static final String SETTINGS_PROFILE_URL = "/"+SETTINGS_PROFILE_VIEW_NAME;
+
     static final String SETTINGS_PASSOWRD_VIEW_NAME = "settings/password";
     static final String SETTINGS_PASSOWRD_URL = "/"+SETTINGS_PASSOWRD_VIEW_NAME;
-    static final String SETTINGS_NOTIFICATIONS_URL = "settings/notifications";
-    static final String SETTINGS_NOTIFICATIONS_VIEW_NAME = "/"+SETTINGS_NOTIFICATIONS_URL;
+
+    static final String SETTINGS_NOTIFICATIONS_VIEW_NAME = "settings/notifications";
+    static final String SETTINGS_NOTIFICATIONS_URL = "/"+SETTINGS_NOTIFICATIONS_VIEW_NAME;
+
     static final String SETTINGS_ACCOUNT_VIEW_NAME = "settings/account";
     static final String SETTINGS_ACCOUNT_URL = "/"+SETTINGS_ACCOUNT_VIEW_NAME;
+
     static final String SETTINGS_TAGS_VIEW_NAME = "settings/tags";
     static final String SETTINGS_TAGS_URL = "/"+SETTINGS_TAGS_VIEW_NAME;
+
+    static final String SETTINGS_ZONES_VIEW_NAME = "settings/zones";
+    static final String SETTINGS_ZONES_URL = "/"+SETTINGS_ZONES_VIEW_NAME;
 
     private final AccountService accountService;
     private final PasswordFormValidator passwordFormValidator;
@@ -47,6 +57,7 @@ public class SettingsController {
     private final ModelMapper modelMapper;
     private final TagRepository tagRepository;
     private final ObjectMapper objectMapper;
+    private final ZoneRepository zoneRepository;
 
     @InitBinder("passwordForm")
     public void passwordFormInitBinder(WebDataBinder webDataBinder) {
@@ -169,7 +180,7 @@ public class SettingsController {
 
         accountService.updateNotifications(account, notifications);
         redirectAttributes.addFlashAttribute("message", "알림 설정을 변경했습니다.");
-        return "redirect:/" + SETTINGS_NOTIFICATIONS_URL;
+        return "redirect:" + SETTINGS_NOTIFICATIONS_URL;
     }
 
     @GetMapping(SETTINGS_ACCOUNT_URL)
@@ -188,7 +199,47 @@ public class SettingsController {
         }
         accountService.updateNickname(account ,nicknameForm.getNickname());
         redirectAttributes.addFlashAttribute("message", "닉네임을 수정했습니다.");
-        return "redirect:/" + SETTINGS_ACCOUNT_URL;
+        return "redirect:" + SETTINGS_ACCOUNT_URL;
     }
+
+    @GetMapping(SETTINGS_ZONES_URL)
+    public String updateZonesForm(@CurrentUser Account account, Model model) throws JsonProcessingException {
+        model.addAttribute(account);
+
+        Set<Zone> zones = accountService.getZones(account);
+        model.addAttribute("zones", zones.stream().map(Zone::toString).collect(Collectors.toList()));
+
+        List<String> allZones = zoneRepository.findAll().stream().map(Zone::toString).collect(Collectors.toList());
+        model.addAttribute("whitelist", objectMapper.writeValueAsString(allZones));
+
+        return SETTINGS_ZONES_VIEW_NAME;
+    }
+
+    @PostMapping(SETTINGS_ZONES_URL+"/add")
+    @ResponseBody
+    public ResponseEntity addZone(@CurrentUser Account account, @RequestBody ZoneForm zoneForm) {
+        Zone zone = zoneRepository.findByCityAndProvince(zoneForm.getCityName(), zoneForm.getProvinceName());
+        if (zone == null) {
+
+            return ResponseEntity.badRequest().build();
+        }
+
+        accountService.addZone(account, zone);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(SETTINGS_ZONES_URL+"/remove")
+    @ResponseBody
+    public ResponseEntity removeZone(@CurrentUser Account account, @RequestBody ZoneForm zoneForm) {
+        Zone zone = zoneRepository.findByCityAndProvince(zoneForm.getCityName(), zoneForm.getProvinceName());
+        if (zone == null) {
+            log.error("zone is null");
+            return ResponseEntity.badRequest().build();
+        }
+
+        accountService.removeZone(account, zone);
+        return ResponseEntity.ok().build();
+    }
+
 
 }

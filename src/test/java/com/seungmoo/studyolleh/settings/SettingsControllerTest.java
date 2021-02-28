@@ -7,8 +7,11 @@ import com.seungmoo.studyolleh.account.AccountService;
 import com.seungmoo.studyolleh.account.SignUpForm;
 import com.seungmoo.studyolleh.domain.Account;
 import com.seungmoo.studyolleh.domain.Tag;
+import com.seungmoo.studyolleh.domain.Zone;
 import com.seungmoo.studyolleh.settings.form.TagForm;
+import com.seungmoo.studyolleh.settings.form.ZoneForm;
 import com.seungmoo.studyolleh.tag.TagRepository;
+import com.seungmoo.studyolleh.zone.ZoneRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -48,6 +51,11 @@ class SettingsControllerTest {
     @Autowired
     TagRepository tagRepository;
 
+    @Autowired
+    ZoneRepository zoneRepository;
+
+    private Zone testZone = Zone.builder().city("test").localNameOfCity("테스트시").province("테스트주").build();
+
 
     @BeforeEach
     void beforeEach() {
@@ -58,11 +66,16 @@ class SettingsControllerTest {
             signUpForm.setPassword("12345678");
             accountService.processNewAccount(signUpForm);
         }
+
+        if (zoneRepository.findByCityAndProvince(testZone.getCity(), testZone.getProvince()) == null) {
+            zoneRepository.save(testZone);
+        }
     }
 
-    //@AfterEach
+    @AfterEach
     void afterEach() {
         accountRepository.deleteAll();
+        zoneRepository.deleteAll();
     }
 
     // @WithUserDetails 이게 @BeforeEach 코드보다 먼저 실행돼서 UserDetailsService에서 loadUser 시, 실패 발생!!@!
@@ -232,6 +245,61 @@ class SettingsControllerTest {
         // 여기까지 트랜잭션 유지
 
         assertFalse(seungmoo.getTags().contains(newTag));
+    }
+
+    @WithUserDetails(value = "seungmoo", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("계정의 지역 정보 수정 폼")
+    @Test
+    void updateZonesForm() throws Exception {
+        mockMvc.perform(get(SettingsController.SETTINGS_ZONES_URL))
+                .andExpect(view().name(SettingsController.SETTINGS_ZONES_VIEW_NAME))
+                .andExpect(model().attributeExists("account"))
+                .andExpect(model().attributeExists("whitelist"))
+                .andExpect(model().attributeExists("zones"));
+    }
+
+    @WithUserDetails(value = "seungmoo", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("계정의 지역 정보 추가")
+    @Test
+    @Transactional
+    void addZone() throws Exception {
+        ZoneForm zoneForm = new ZoneForm();
+        zoneForm.setZoneName(testZone.toString());
+
+        mockMvc.perform(post(SettingsController.SETTINGS_ZONES_URL + "/add")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(zoneForm))
+                .with(csrf()))
+                .andExpect(status().isOk());
+
+        Account seungmoo = accountRepository.findByNickname("seungmoo");
+        Zone zone = zoneRepository.findByCityAndProvince(testZone.getCity(), testZone.getProvince());
+        // failed to lazily initialize a collection of role 발생!!
+        // seungmoo 객체는 이미 영속성 컨텍스트가 종료되었다! @Transactional 선언 잊지 말자 ㅠ
+        assertTrue(seungmoo.getZones().contains(zone));
+    }
+
+    @WithUserDetails(value = "seungmoo", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("계정의 지역 정보 제거")
+    @Test
+    @Transactional
+    void removeZone() throws Exception {
+        Account seungmoo = accountRepository.findByNickname("seungmoo");
+        Zone zone = zoneRepository.findByCityAndProvince(testZone.getCity(), testZone.getProvince());
+        accountService.addZone(seungmoo, zone);
+
+        ZoneForm zoneForm = new ZoneForm();
+        zoneForm.setZoneName(testZone.toString());
+
+        mockMvc.perform(post(SettingsController.SETTINGS_ZONES_URL + "/remove")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(zoneForm))
+                .with(csrf()))
+                .andExpect(status().isOk());
+
+        // failed to lazily initialize a collection of role 발생!!
+        // seungmoo 객체는 이미 영속성 컨텍스트가 종료되었다! @Transactional 선언 잊지 말자 ㅠ
+        assertFalse(seungmoo.getZones().contains(zone));
     }
 
 }
