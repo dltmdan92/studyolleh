@@ -3,6 +3,12 @@ package com.seungmoo.studyolleh.settings;
 import com.seungmoo.studyolleh.account.AccountService;
 import com.seungmoo.studyolleh.account.CurrentUser;
 import com.seungmoo.studyolleh.domain.Account;
+import com.seungmoo.studyolleh.settings.form.NicknameForm;
+import com.seungmoo.studyolleh.settings.form.Notifications;
+import com.seungmoo.studyolleh.settings.form.PasswordForm;
+import com.seungmoo.studyolleh.settings.form.Profile;
+import com.seungmoo.studyolleh.settings.validator.NicknameValidator;
+import com.seungmoo.studyolleh.settings.validator.PasswordFormValidator;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Controller;
@@ -22,19 +28,27 @@ import javax.validation.Valid;
 public class SettingsController {
 
     static final String SETTINGS_PROFILE_VIEW_NAME = "settings/profile";
-    static final String SETTINGS_PROFILE_URL = "/settings/profile";
+    static final String SETTINGS_PROFILE_URL = "/"+SETTINGS_PROFILE_VIEW_NAME;
     static final String SETTINGS_PASSOWRD_VIEW_NAME = "settings/password";
-    static final String SETTINGS_PASSOWRD_URL = "/settings/password";
+    static final String SETTINGS_PASSOWRD_URL = "/"+SETTINGS_PASSOWRD_VIEW_NAME;
     static final String SETTINGS_NOTIFICATIONS_URL = "settings/notifications";
-    static final String SETTINGS_NOTIFICATIONS_VIEW_NAME = "/settings/notifications";
+    static final String SETTINGS_NOTIFICATIONS_VIEW_NAME = "/"+SETTINGS_NOTIFICATIONS_URL;
+    static final String SETTINGS_ACCOUNT_URL = "settings/account";
+    static final String SETTINGS_ACCOUNT_VIEW_NAME = "/"+SETTINGS_ACCOUNT_URL;
 
     private final AccountService accountService;
     private final PasswordFormValidator passwordFormValidator;
+    private final NicknameValidator nicknameValidator;
     private final ModelMapper modelMapper;
 
     @InitBinder("passwordForm")
-    public void initBinder(WebDataBinder webDataBinder) {
+    public void passwordFormInitBinder(WebDataBinder webDataBinder) {
         webDataBinder.addValidators(passwordFormValidator);
+    }
+
+    @InitBinder("nicknameForm")
+    public void nicknameFormInitBinder(WebDataBinder webDataBinder) {
+        webDataBinder.addValidators(nicknameValidator);
     }
 
     @GetMapping(SETTINGS_PROFILE_URL)
@@ -108,6 +122,25 @@ public class SettingsController {
         accountService.updateNotifications(account, notifications);
         redirectAttributes.addFlashAttribute("message", "알림 설정을 변경했습니다.");
         return "redirect:/" + SETTINGS_NOTIFICATIONS_URL;
+    }
+
+    @GetMapping(SETTINGS_ACCOUNT_URL)
+    public String updateAccountForm(@CurrentUser Account account, Model model) {
+        model.addAttribute(account);
+        model.addAttribute(modelMapper.map(account, NicknameForm.class));
+        return SETTINGS_ACCOUNT_VIEW_NAME;
+    }
+
+    @PostMapping(SETTINGS_ACCOUNT_URL)
+    public String updateAccount(@CurrentUser Account account, @Valid NicknameForm nicknameForm,
+                                Model model, Errors errors, RedirectAttributes redirectAttributes) {
+        if (errors.hasErrors()) {
+            model.addAttribute(account);
+            return SETTINGS_ACCOUNT_VIEW_NAME;
+        }
+        accountService.updateNickname(account ,nicknameForm.getNickname());
+        redirectAttributes.addFlashAttribute("message", "닉네임을 수정했습니다.");
+        return "redirect:/" + SETTINGS_ACCOUNT_URL;
     }
 
 }

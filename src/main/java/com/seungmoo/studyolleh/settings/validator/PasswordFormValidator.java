@@ -1,5 +1,6 @@
-package com.seungmoo.studyolleh.settings;
+package com.seungmoo.studyolleh.settings.validator;
 
+import com.seungmoo.studyolleh.settings.form.PasswordForm;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;

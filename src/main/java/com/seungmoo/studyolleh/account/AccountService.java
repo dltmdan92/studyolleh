@@ -1,8 +1,8 @@
 package com.seungmoo.studyolleh.account;
 
 import com.seungmoo.studyolleh.domain.Account;
-import com.seungmoo.studyolleh.settings.Notifications;
-import com.seungmoo.studyolleh.settings.Profile;
+import com.seungmoo.studyolleh.settings.form.Notifications;
+import com.seungmoo.studyolleh.settings.form.Profile;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.mail.SimpleMailMessage;
@@ -17,7 +17,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -171,5 +170,12 @@ public class AccountService implements UserDetailsService {
         account.setStudyEnrollmentResultByEmail(notifications.isStudyEnrollmentResultByEmail());
         account.setStudyEnrollmentResultByWeb(notifications.isStudyEnrollmentResultByWeb());*/
         accountRepository.save(account);
+    }
+
+    public void updateNickname(Account account, String nickname) {
+        account.setNickname(nickname);
+        // 현재 account는 detached 상태이므로, 명시적으로 save를 한번 해줘야 한다.
+        accountRepository.save(account);
+        login(account);
     }
 }
