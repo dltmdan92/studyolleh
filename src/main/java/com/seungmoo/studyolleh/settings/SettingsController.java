@@ -75,6 +75,20 @@ public class SettingsController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping(SETTINGS_TAGS_URL+"/remove")
+    @ResponseBody
+    public ResponseEntity<?> removeTag(@CurrentUser Account account, @RequestBody TagForm tagForm) {
+        String title = tagForm.getTagTitle();
+        try {
+            Tag tag = tagRepository.findByTitle(title)
+                    .orElseThrow(NullPointerException::new);
+            accountService.removeTag(account, tag);
+            return ResponseEntity.ok().build();
+        } catch (NullPointerException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @GetMapping(SETTINGS_PROFILE_URL)
     public String profileUpdateForm(@CurrentUser Account account, Model model) {
         model.addAttribute(account);
