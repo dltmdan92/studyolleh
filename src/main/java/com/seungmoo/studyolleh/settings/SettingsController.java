@@ -35,6 +35,8 @@ public class SettingsController {
     static final String SETTINGS_NOTIFICATIONS_VIEW_NAME = "/"+SETTINGS_NOTIFICATIONS_URL;
     static final String SETTINGS_ACCOUNT_URL = "settings/account";
     static final String SETTINGS_ACCOUNT_VIEW_NAME = "/"+SETTINGS_ACCOUNT_URL;
+    static final String SETTINGS_TAGS_URL = "settings/tags";
+    static final String SETTINGS_TAGS_VIEW_NAME = "/"+SETTINGS_TAGS_URL;
 
     private final AccountService accountService;
     private final PasswordFormValidator passwordFormValidator;
@@ -49,6 +51,12 @@ public class SettingsController {
     @InitBinder("nicknameForm")
     public void nicknameFormInitBinder(WebDataBinder webDataBinder) {
         webDataBinder.addValidators(nicknameValidator);
+    }
+
+    @GetMapping(SETTINGS_TAGS_URL)
+    public String updateTags(@CurrentUser Account account, Model model) {
+        model.addAttribute(account);
+        return SETTINGS_TAGS_VIEW_NAME;
     }
 
     @GetMapping(SETTINGS_PROFILE_URL)
