@@ -36,10 +36,10 @@ public class SettingsController {
     static final String SETTINGS_PASSOWRD_URL = "/"+SETTINGS_PASSOWRD_VIEW_NAME;
     static final String SETTINGS_NOTIFICATIONS_URL = "settings/notifications";
     static final String SETTINGS_NOTIFICATIONS_VIEW_NAME = "/"+SETTINGS_NOTIFICATIONS_URL;
-    static final String SETTINGS_ACCOUNT_URL = "settings/account";
-    static final String SETTINGS_ACCOUNT_VIEW_NAME = "/"+SETTINGS_ACCOUNT_URL;
-    static final String SETTINGS_TAGS_URL = "settings/tags";
-    static final String SETTINGS_TAGS_VIEW_NAME = "/"+SETTINGS_TAGS_URL;
+    static final String SETTINGS_ACCOUNT_VIEW_NAME = "settings/account";
+    static final String SETTINGS_ACCOUNT_URL = "/"+SETTINGS_ACCOUNT_VIEW_NAME;
+    static final String SETTINGS_TAGS_VIEW_NAME = "settings/tags";
+    static final String SETTINGS_TAGS_URL = "/"+SETTINGS_TAGS_VIEW_NAME;
 
     private final AccountService accountService;
     private final PasswordFormValidator passwordFormValidator;

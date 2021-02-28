@@ -55,7 +55,7 @@ public class AccountService implements UserDetailsService {
         // 이메일 확인 용 토큰 만들기
         // 얘는 @Transactional 덕분에 여기서도 Persistent 상태 이기 떄문에 JPA의 LifeCycle 중 managed 상태이다.
         // 그러므로 generateEmailCheckToken 메서드를 사용하면! --> JPA가 DB에도 알아서 반영을 해준다!!
-        newAccount.generateEmailCheckToken();
+
         sendSignUpConfirmEmail(newAccount);
         return newAccount;
     }
@@ -66,19 +66,20 @@ public class AccountService implements UserDetailsService {
      * @return 저장된 회원 정보
      */
     private Account saveNewAccount(SignUpForm signUpForm) {
+        signUpForm.setPassword(passwordEncoder.encode(signUpForm.getPassword()));
+        Account account = modelMapper.map(signUpForm, Account.class);
+        account.generateEmailCheckToken();
+        // 아예 modelMapper 통해서 객체 만들어라 (아래 코드는 너무 지저분...)
+        /*
         Account account = Account.builder()
                 .email(signUpForm.getEmail())
                 .nickname(signUpForm.getNickname())
                 // TODO encoding 반드시 해야함
                 .password(passwordEncoder.encode(signUpForm.getPassword()))
-                .studyCreatedByWeb(true)
-                .studyEnrollmentResultByWeb(true)
-                .studyUpdatedByWeb(true)
-                .build();
+                .build();*/
         // NEW 회원 정보 저장
-        Account newAccount = accountRepository.save(account);
-        // 여기 안에서 만큼은 newAccount는 Persistent 상태임. 그러나 이 메소드를 나가면! Detached 상태이다.
-        return newAccount;
+        // 여기 안에서 만큼은 account는 Persistent 상태임. 그러나 이 메소드를 나가면! Detached 상태이다.
+        return accountRepository.save(account);
     }
 
     /**

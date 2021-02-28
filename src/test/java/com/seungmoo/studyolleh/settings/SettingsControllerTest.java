@@ -1,17 +1,25 @@
 package com.seungmoo.studyolleh.settings;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seungmoo.studyolleh.WithAccount;
 import com.seungmoo.studyolleh.account.AccountRepository;
 import com.seungmoo.studyolleh.account.AccountService;
 import com.seungmoo.studyolleh.account.SignUpForm;
 import com.seungmoo.studyolleh.domain.Account;
+import com.seungmoo.studyolleh.domain.Tag;
+import com.seungmoo.studyolleh.settings.form.TagForm;
+import com.seungmoo.studyolleh.tag.TagRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -19,6 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -32,6 +41,13 @@ class SettingsControllerTest {
 
     @Autowired
     AccountRepository accountRepository;
+
+    @Autowired
+    ObjectMapper objectMapper;
+
+    @Autowired
+    TagRepository tagRepository;
+
 
     @BeforeEach
     void beforeEach() {
@@ -154,6 +170,68 @@ class SettingsControllerTest {
                 .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(view().name(SettingsController.SETTINGS_PASSOWRD_VIEW_NAME));
+    }
+
+    @WithUserDetails(value = "seungmoo", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("계정의 태그 수정 폼")
+    @Test
+    void updateTagsForm() throws Exception {
+        mockMvc.perform(get(SettingsController.SETTINGS_TAGS_URL))
+                .andExpect(view().name(SettingsController.SETTINGS_TAGS_VIEW_NAME))
+                .andExpect(model().attributeExists("account"))
+                .andExpect(model().attributeExists("whitelist"))
+                .andExpect(model().attributeExists("tags"));
+    }
+
+    @WithUserDetails(value = "seungmoo", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("계정에 태그 추가")
+    @Test
+    @Transactional // 아래 소스를 테스트하기 위해 Transaction 선언해준다.
+    void addTag() throws Exception {
+        TagForm tagForm = new TagForm();
+        tagForm.setTagTitle("newTag");
+
+        // 요청 보낼 때 트랜잭션 시작
+        mockMvc.perform(post(SettingsController.SETTINGS_TAGS_URL + "/add")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(tagForm))
+                .with(csrf()))
+                .andExpect(status().isOk());
+        // 여기까지 트랜잭션 유지
+
+        // 그럼 아래는???
+        // 트랜잭션 유지가 안된다!
+
+        // 이런애들은 Repository가 실행할때면 Transaction이다.
+        // 아래 애들은 Detached 상태!!
+        Optional<Tag> newTag = tagRepository.findByTitle("newTag");
+        assertNotNull(newTag.get());
+        assertTrue(accountRepository.findByNickname("seungmoo").getTags().contains(newTag.get()));
+    }
+
+    @WithUserDetails(value = "seungmoo", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("계정에 태그 삭제")
+    @Test
+    @Transactional // 아래 소스를 테스트하기 위해 Transaction 선언해준다.
+    void removeTag() throws Exception {
+        Account seungmoo = accountRepository.findByNickname("seungmoo");
+        Tag newTag = tagRepository.save(Tag.builder().title("newTag").build());
+        accountService.addTag(seungmoo, newTag);
+
+        assertTrue(seungmoo.getTags().contains(newTag));
+
+        TagForm tagForm = new TagForm();
+        tagForm.setTagTitle("newTag");
+
+        // 요청 보낼 때 트랜잭션 시작
+        mockMvc.perform(post(SettingsController.SETTINGS_TAGS_URL + "/remove")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(tagForm))
+                .with(csrf()))
+                .andExpect(status().isOk());
+        // 여기까지 트랜잭션 유지
+
+        assertFalse(seungmoo.getTags().contains(newTag));
     }
 
 }

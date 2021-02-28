@@ -4,6 +4,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -64,7 +65,7 @@ public class Account {
     // @ManyToMany -> 실제로는 다대다 관계는 없고, 다대1, 1대다 이렇게 된다.
     // Account <-- Account_Tag --> Tag 이렇게 연관관계가 생성된다.
     @ManyToMany
-    private Set<Tag> tags;
+    private Set<Tag> tags = new HashSet<>();
 
     private LocalDateTime emailCheckTokenGeneratedAt;
 
