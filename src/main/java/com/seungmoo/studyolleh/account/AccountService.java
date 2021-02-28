@@ -1,6 +1,7 @@
 package com.seungmoo.studyolleh.account;
 
 import com.seungmoo.studyolleh.domain.Account;
+import com.seungmoo.studyolleh.domain.Tag;
 import com.seungmoo.studyolleh.settings.form.Notifications;
 import com.seungmoo.studyolleh.settings.form.Profile;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * 엔티티 객체의 정보 변경은 반드시!! Transaction안에서 수행해야
@@ -187,5 +189,20 @@ public class AccountService implements UserDetailsService {
         mailMessage.setText("/login-by-email?token=" + account.getEmailCheckToken() +
                 "&email=" + account.getEmail());
         javaMailSender.send(mailMessage);
+    }
+
+    public void addTag(Account account, Tag tag) {
+        // findById는 Eager fetch
+        // getOne은 Lazy Loading, 경우에 따라서는 getOne이 더 효율적
+        // 여기서는 어쨌든 DB에서 읽어와야 하기 때문에 Eager fetch로 한다.
+        Optional<Account> byId = accountRepository.findById(account.getId());
+        byId.ifPresent(a -> a.getTags().add(tag));
+
+        //accountRepository.getOne(account.getId());
+    }
+
+    public Set<Tag> getTags(Account account) {
+        Optional<Account> byId = accountRepository.findById(account.getId());
+        return byId.orElseThrow().getTags();
     }
 }
