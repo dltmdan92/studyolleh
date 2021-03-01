@@ -14,7 +14,7 @@ import java.io.InputStream;
 /**
  * profile local일 떄 Bean 등록해서 쓴다.
  */
-@Profile({"local", "dev"})
+@Profile("local")
 @Component
 @Slf4j
 public class ConsoleMailSender implements JavaMailSender {
