@@ -4,9 +4,12 @@ import com.seungmoo.studyolleh.domain.Account;
 import com.seungmoo.studyolleh.domain.Study;
 import com.seungmoo.studyolleh.domain.Tag;
 import com.seungmoo.studyolleh.domain.Zone;
+import com.seungmoo.studyolleh.study.event.StudyCreatedEvent;
+import com.seungmoo.studyolleh.study.event.StudyUpdateEvent;
 import com.seungmoo.studyolleh.study.form.StudyDescriptionForm;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +21,7 @@ public class StudyService {
 
     private final StudyRepository studyRepository;
     private final ModelMapper modelMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     public Study createNewStudy(Study study, Account account) {
         Study newStudy = studyRepository.save(study);
@@ -38,7 +42,7 @@ public class StudyService {
     }
 
     public Study getStudyToUpdate(Account account, String path) {
-        Study study = studyRepository.findAccountWithTagsByPath(path);
+        Study study = studyRepository.findStudyWithTagsByPath(path);
         if (!study.isManagedBy(account)) {
             throw new AccessDeniedException("해당 기능을 사용할 수 없습니다.");
         }
@@ -84,7 +88,7 @@ public class StudyService {
     }
 
     public Study getStudyToUpdateZone(Account account, String path) {
-        Study study = studyRepository.findAccountWithZonesByPath(path);
+        Study study = studyRepository.findStudyWithZonesByPath(path);
         checkIfExistingStudy(path, study);
         checkIfManager(study, account);
         return study;
@@ -97,5 +101,22 @@ public class StudyService {
 
     public void removeZone(Study study, Zone zone) {
         study.getZones().remove(zone);
+    }
+
+    public Study getStudyToUpdateStatus(Account account, String path) {
+        Study study = studyRepository.findStudyWithManagersByPath(path);
+        checkIfExistingStudy(path, study);
+        checkIfManager(study, account);
+        return study;
+    }
+
+    public void publish(Study study) {
+        study.setPublished(true);
+        eventPublisher.publishEvent(new StudyCreatedEvent(study));
+    }
+
+    public void close(Study study) {
+        study.close();
+        eventPublisher.publishEvent(new StudyUpdateEvent(study, "스터디가 종료되었습니다."));
     }
 }
