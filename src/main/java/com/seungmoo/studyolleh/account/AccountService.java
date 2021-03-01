@@ -75,6 +75,8 @@ public class AccountService implements UserDetailsService {
         // 얘는 @Transactional 덕분에 여기서도 Persistent 상태 이기 떄문에 JPA의 LifeCycle 중 managed 상태이다.
         // 그러므로 generateEmailCheckToken 메서드를 사용하면! --> JPA가 DB에도 알아서 반영을 해준다!!
 
+        // 여기서 이메일 전송이 실패하면!! RuntimeException 발생 시,
+        // Transaction은 Rollback 처리 된다. 즉 위의 saveNewAccount 회원 저장 기능은 롤백된다!!
         sendSignUpConfirmEmail(newAccount);
         return newAccount;
     }
@@ -283,5 +285,13 @@ public class AccountService implements UserDetailsService {
     public void removeZone(Account account, Zone zone) {
         Optional<Account> byId = accountRepository.findById(account.getId());
         byId.ifPresent(a -> a.getZones().remove(zone));
+    }
+
+    public Account getAccount(String nickname) {
+        Account byNickname = accountRepository.findByNickname(nickname);
+        if (nickname == null) {
+            throw new IllegalArgumentException(nickname + "에 해당하는 사용자가 없습니다.");
+        }
+        return byNickname;
     }
 }
