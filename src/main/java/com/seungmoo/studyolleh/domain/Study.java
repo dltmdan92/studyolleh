@@ -4,6 +4,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -17,10 +18,10 @@ public class Study {
     // mappedBy 셋팅 안해주고 그냥 이렇게 @ManyToMany하면 단방향 관계 이다.
     // 그냥 Study가 Account를 참조하는 식으로만 되어있음.
     @ManyToMany()
-    private Set<Account> managers;
+    private Set<Account> managers = new HashSet<>();
 
     @ManyToMany
-    private Set<Account> members;
+    private Set<Account> members = new HashSet<>();
 
     @Column(unique = true)
     private String path;
@@ -37,10 +38,10 @@ public class Study {
     private String image;
 
     @ManyToMany
-    private Set<Tag> tags;
+    private Set<Tag> tags = new HashSet<>();
 
     @ManyToMany
-    private Set<Zone> zones;
+    private Set<Zone> zones = new HashSet<>();
 
     private LocalDateTime publishedDateTime;
 
@@ -54,4 +55,7 @@ public class Study {
 
     private boolean useBanner;
 
+    public void addManager(Account account) {
+        this.managers.add(account);
+    }
 }
