@@ -14,7 +14,7 @@ import java.util.Set;
         attributeNodes = {
             @NamedAttributeNode("tags"),
             @NamedAttributeNode("zones"),
-            @NamedAttributeNode("manager"),
+            @NamedAttributeNode("managers"),
             @NamedAttributeNode("members"),
         }
 )
@@ -28,7 +28,7 @@ public class Study {
 
     // mappedBy 셋팅 안해주고 그냥 이렇게 @ManyToMany하면 단방향 관계 이다.
     // 그냥 Study가 Account를 참조하는 식으로만 되어있음.
-    @ManyToMany()
+    @ManyToMany
     private Set<Account> managers = new HashSet<>();
 
     @ManyToMany

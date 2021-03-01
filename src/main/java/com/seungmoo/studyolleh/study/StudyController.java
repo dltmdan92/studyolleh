@@ -5,6 +5,7 @@ import com.seungmoo.studyolleh.domain.Account;
 import com.seungmoo.studyolleh.domain.Study;
 import com.seungmoo.studyolleh.study.form.StudyForm;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +20,7 @@ import javax.validation.Valid;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class StudyController {
@@ -41,8 +43,10 @@ public class StudyController {
     }
 
     @PostMapping("/new-study")
-    public String newStudySubmit(@CurrentUser Account account, @Valid StudyForm studyForm, Errors errors) {
+    public String newStudySubmit(@CurrentUser Account account, @Valid StudyForm studyForm, Errors errors, Model model) {
         if (errors.hasErrors()) {
+            errors.getAllErrors().forEach(e -> log.error(e.getDefaultMessage()));
+            model.addAttribute(account);
             return "study/form";
         }
 
@@ -56,6 +60,13 @@ public class StudyController {
         model.addAttribute(account);
         model.addAttribute(studyRepository.findByPath(path));
         return "study/view";
+    }
+
+    @GetMapping("/study/{path}/members")
+    public String viewStudyMembers(@CurrentUser Account account, @PathVariable String path, Model model) {
+        model.addAttribute(account);
+        model.addAttribute(studyRepository.findByPath(path));
+        return "study/members";
     }
 
 }
