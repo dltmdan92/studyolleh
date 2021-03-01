@@ -1,5 +1,6 @@
 package com.seungmoo.studyolleh.domain;
 
+import com.seungmoo.studyolleh.account.UserAccount;
 import lombok.*;
 
 import javax.persistence.*;
@@ -7,6 +8,16 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+// Study와 연결되어 있는 데이터들 Entity들을 한꺼번에 갖고올 때
+// @NamedEntityGraph 통해서 Join해서 한꺼번어 갖고올 수 있다. (Eager loading)
+@NamedEntityGraph(name = "Study.withAll",
+        attributeNodes = {
+            @NamedAttributeNode("tags"),
+            @NamedAttributeNode("zones"),
+            @NamedAttributeNode("manager"),
+            @NamedAttributeNode("members"),
+        }
+)
 @Entity
 @Getter @Setter @EqualsAndHashCode(of = "id")
 @Builder @AllArgsConstructor @NoArgsConstructor
@@ -49,6 +60,8 @@ public class Study {
 
     private LocalDateTime recruitingUpdatedDateTime;
 
+    private boolean recruiting;
+
     private boolean published;
 
     private boolean closed;
@@ -57,5 +70,19 @@ public class Study {
 
     public void addManager(Account account) {
         this.managers.add(account);
+    }
+
+    public boolean isJoinable(UserAccount userAccount) {
+        Account account = userAccount.getAccount();
+        return this.isPublished() && this.isRecruiting()
+                && !this.members.contains(account) && !this.managers.contains(account);
+    }
+
+    public boolean isMember(UserAccount userAccount) {
+        return this.members.contains(userAccount.getAccount());
+    }
+
+    public boolean isManager(UserAccount userAccount) {
+        return this.managers.contains(userAccount.getAccount());
     }
 }
