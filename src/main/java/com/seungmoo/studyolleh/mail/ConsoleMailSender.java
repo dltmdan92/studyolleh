@@ -13,9 +13,11 @@ import java.io.InputStream;
 
 /**
  * profile local일 떄 Bean 등록해서 쓴다.
+ *
+ * 이거 이제 안씀 (ConsoleEmailService 쓴다.)
  */
-@Profile("local")
-@Component
+//@Profile("local")
+//@Component
 @Slf4j
 public class ConsoleMailSender implements JavaMailSender {
     @Override

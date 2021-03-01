@@ -1,6 +1,8 @@
 package com.seungmoo.studyolleh.account;
 
 import com.seungmoo.studyolleh.domain.Account;
+import com.seungmoo.studyolleh.mail.EmailMessage;
+import com.seungmoo.studyolleh.mail.EmailService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +35,11 @@ class AccountControllerTest {
     private AccountRepository accountRepository;
 
     @MockBean
-    JavaMailSender javaMailSender;
+    EmailService emailService;
+
+    /*
+    @MockBean
+    JavaMailSender javaMailSender;*/
 
     @DisplayName("회원 가입 화면 보이는지 테스트")
     @Test
@@ -89,7 +95,7 @@ class AccountControllerTest {
 
         // SimpleMailMessage --> 이거 Type의 Instance를 가지고 send()메서드가 호출이 되었는가를 검증
         // 메일 보냈다를 검증
-        then(javaMailSender).should().send(any(SimpleMailMessage.class));
+        then(emailService).should().send(any(EmailMessage.class));
     }
 
     @DisplayName("인증 메일 확인 - 입력값 오류 (이메일 토큰 값 체크)")

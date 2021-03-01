@@ -3,23 +3,32 @@ package com.seungmoo.studyolleh.account;
 import com.seungmoo.studyolleh.domain.Account;
 import com.seungmoo.studyolleh.domain.Tag;
 import com.seungmoo.studyolleh.domain.Zone;
+import com.seungmoo.studyolleh.mail.EmailMessage;
+import com.seungmoo.studyolleh.mail.EmailService;
 import com.seungmoo.studyolleh.settings.form.Notifications;
 import com.seungmoo.studyolleh.settings.form.Profile;
 import com.seungmoo.studyolleh.zone.ZoneRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.codec.Utf8;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -33,13 +42,15 @@ import java.util.Set;
  * Repository를 사용하면 기본적으로 SimpleJpaRepository(구현체)가 Transactional 선언하므로
  * 트랜잭션 적용
  */
+@Slf4j
 @Transactional
 @Service
 @RequiredArgsConstructor
 public class AccountService implements UserDetailsService {
 
     private final AccountRepository accountRepository;
-    private final JavaMailSender javaMailSender;
+    //private final JavaMailSender javaMailSender;
+    private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
     private final ZoneRepository zoneRepository;
@@ -91,6 +102,18 @@ public class AccountService implements UserDetailsService {
      * @return mailMessage
      */
     public void sendSignUpConfirmEmail(Account newAccount) {
+        EmailMessage emailMessage = EmailMessage.builder()
+                .to(newAccount.getEmail())
+                .subject("스터디올래, 회원 가입 인증")
+                // TODO message 쪽은 나중에 html 화 해서 setting 해준다.
+                .message("/check-email-token" +
+                        "?token=" + newAccount.getEmailCheckToken()
+                        + "&email=" + newAccount.getEmail())
+                .build();
+
+        emailService.send(emailMessage);
+
+        /*
         // 이메일을 보내 봅시다.
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         // 받는 사람
@@ -102,7 +125,7 @@ public class AccountService implements UserDetailsService {
                 "?token="+ newAccount.getEmailCheckToken()
                 +"&email="+ newAccount.getEmail());
 
-        javaMailSender.send(mailMessage);
+        javaMailSender.send(mailMessage);*/
     }
 
     /**
@@ -186,13 +209,23 @@ public class AccountService implements UserDetailsService {
     }
 
     public void sendLoginLink(Account account) {
+        EmailMessage emailMessage = EmailMessage.builder()
+                .to(account.getEmail())
+                .subject("스터디올래, 로그인 링크")
+                .message("/login-by-email?token=" + account.getEmailCheckToken() +
+                        "&email=" + account.getEmail())
+                .build();
+
+        emailService.send(emailMessage);
+
+        /*
         account.generateEmailCheckToken();;
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setTo(account.getEmail());
         mailMessage.setSubject("스터디올래, 로그인 링크");
         mailMessage.setText("/login-by-email?token=" + account.getEmailCheckToken() +
                 "&email=" + account.getEmail());
-        javaMailSender.send(mailMessage);
+        javaMailSender.send(mailMessage);*/
     }
 
     public void addTag(Account account, Tag tag) {
