@@ -7,6 +7,7 @@ import com.seungmoo.studyolleh.domain.Zone;
 import com.seungmoo.studyolleh.study.event.StudyCreatedEvent;
 import com.seungmoo.studyolleh.study.event.StudyUpdateEvent;
 import com.seungmoo.studyolleh.study.form.StudyDescriptionForm;
+import com.seungmoo.studyolleh.study.form.StudyForm;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.ApplicationEventPublisher;
@@ -118,5 +119,41 @@ public class StudyService {
     public void close(Study study) {
         study.close();
         eventPublisher.publishEvent(new StudyUpdateEvent(study, "스터디가 종료되었습니다."));
+    }
+
+    public void startRecruit(Study study) {
+        study.startRecruit();
+    }
+
+    public void stopRecruit(Study study) {
+        study.stopRecruit();
+    }
+
+    // @RequestParam에 대해서는 @Valid 못쓰니까 여기서 valid 로직 해준다.
+    public boolean isValidPath(String newPath) {
+        if (!newPath.matches(StudyForm.VALID_PATH_PATTERN)) {
+            return false;
+        }
+        return !studyRepository.existsByPath(newPath);
+    }
+
+    public void updateStudyPath(Study study, String newPath) {
+        study.setPath(newPath);
+    }
+
+    public boolean isValidTitle(String newTitle) {
+        return newTitle.length() <= 50;
+    }
+
+    public void updateStudyTitle(Study study, String newTitle) {
+        study.setTitle(newTitle);
+    }
+
+    public void remove(Study study) {
+        if (study.isRemovable()) {
+            studyRepository.delete(study);
+        } else {
+            throw new IllegalArgumentException("스터디를 삭제할 수 없습니다.");
+        }
     }
 }
