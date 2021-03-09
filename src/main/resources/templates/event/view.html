@@ -139,9 +139,9 @@
             <dl class="col-3 pt-3 text-right">
                 <dt class="font-weight-light">모집 방법</dt>
                 <dd>
-                    <!-- thymeleaf에서 Type Casting할 떄는, Full Package path를 선언해야 한다. -->
-                    <span th:if="${event.eventType == T(com.studyolle.modules.event.EventType).FCFS}">선착순</span>
-                    <span th:if="${event.eventType == T(com.studyolle.modules.event.EventType).CONFIRMATIVE}">관리자 확인</span>
+                    <!-- thymeleaf에서 Type Casting 할 때는 full package path를 명시해준다. -->
+                    <span th:if="${event.eventType == T(com.seungmoo.studyolleh.domain.EventType).FCFS}">선착순</span>
+                    <span th:if="${event.eventType == T(com.seungmoo.studyolleh.domain.EventType).CONFIRMATIVE}">관리자 확인</span>
                 </dd>
 
                 <dt class="font-weight-light">모집 인원</dt>

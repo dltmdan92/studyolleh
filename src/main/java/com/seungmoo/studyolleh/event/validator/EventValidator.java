@@ -44,4 +44,10 @@ public class EventValidator implements Validator {
         return eventForm.getEndDateTime().isBefore(eventForm.getStartDateTime()) ||
                 eventForm.getEndDateTime().isBefore(eventForm.getEndEnrollmentDateTime());
     }
+
+    public void validateUpdateForm(EventForm eventForm, Event event, Errors errors) {
+        if (eventForm.getLimitOfEnrollments() < event.getNumberOfAcceptedEnrollments()) {
+            errors.rejectValue("limitOfEnrollments", "wrong.value", "확인된 참가 신청 수 보다 모집 인원 수가 커야 합니다.");
+        }
+    }
 }

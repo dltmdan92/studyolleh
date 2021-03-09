@@ -92,4 +92,38 @@ public class EventController {
         return "study/events";
     }
 
+    @GetMapping("/events/{id}/edit")
+    public String updateEventForm(@CurrentUser Account account,
+                                  @PathVariable String path, @PathVariable("id") Event event, Model model) {
+        Study study = studyService.getStudyToUpdate(account, path);
+        model.addAttribute(study);
+        model.addAttribute(account);
+        model.addAttribute(event);
+        model.addAttribute(modelMapper.map(event, EventForm.class));
+        return "event/update-form";
+    }
+
+    @PostMapping("/events/{id}/edit")
+    public String updateEventSubmit(@CurrentUser Account account, @PathVariable String path,
+                                    // 여기서 Event 엔티티가 PathVariable 통해서, JPA가 자동으로 매핑해주는 듯
+                                    // id로 알아서 DB 조회 해온다 --> Persist 상태
+                                    @PathVariable("id") Event event, @Valid EventForm eventForm, Errors errors,
+                                    Model model) {
+        Study study = studyService.getStudyToUpdate(account, path);
+        // 클라이언트에서 강제로 event-type을 바꿀려고 하는 수가 있음
+        // 서버에서 강제로 eventType을 씌워버린다
+        eventForm.setEventType(event.getEventType());
+        eventValidator.validateUpdateForm(eventForm, event, errors);
+
+        if (errors.hasErrors()) {
+            model.addAttribute(account);
+            model.addAttribute(study);
+            model.addAttribute(event);
+            return "event/update-form";
+        }
+
+        eventService.updateEvent(event, eventForm);
+        return "redirect:/study/" + study.getEncodedPath() +  "/events/" + event.getId();
+    }
+
 }
