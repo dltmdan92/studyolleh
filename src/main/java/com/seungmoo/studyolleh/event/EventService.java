@@ -1,14 +1,17 @@
 package com.seungmoo.studyolleh.event;
 
 import com.seungmoo.studyolleh.domain.Account;
+import com.seungmoo.studyolleh.domain.Enrollment;
 import com.seungmoo.studyolleh.domain.Event;
 import com.seungmoo.studyolleh.domain.Study;
+import com.seungmoo.studyolleh.enrollment.EnrollmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Transactional
@@ -18,10 +21,11 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final ModelMapper modelMapper;
+    private final EnrollmentRepository enrollmentRepository;
 
     public Event createEvent(Event event, Study study, Account account) {
         event.setCreatedBy(account);
-        event.setCreateDateTime(LocalDateTime.now());
+        event.setCreatedDateTime(LocalDateTime.now());
         event.setStudy(study);
         return eventRepository.save(event);
     }
@@ -34,5 +38,43 @@ public class EventService {
 
     public void deleteEvent(Event event) {
         eventRepository.delete(event);
+    }
+
+    public void newEnrollment(Event event, Account account) {
+        if (!enrollmentRepository.existsByEventAndAccount(event, account)) {
+            Enrollment enrollment = new Enrollment();
+            enrollment.setEnrolledAt(LocalDateTime.now());
+            enrollment.setAccepted(event.isAbleToAcceptWaitingEnrollment());
+            enrollment.setAccount(account);
+            event.addEnrollment(enrollment);
+            enrollmentRepository.save(enrollment);
+        }
+    }
+
+    public void cancelEnrollment(Event event, Account account) {
+        Enrollment enrollment = enrollmentRepository.findByEventAndAccount(event, account);
+        if (!enrollment.isAttended()) {
+            // 우선 event에서 enrollment와의 관계를 끊고
+            event.removeEnrollment(enrollment);
+            // enrollment를 삭제한다.
+            enrollmentRepository.delete(enrollment);
+            event.acceptNextWaitingEnrollment();
+        }
+    }
+
+    public void acceptEnrollment(Event event, Enrollment enrollment) {
+
+    }
+
+    public void rejectEnrollment(Event event, Enrollment enrollment) {
+
+    }
+
+    public void checkInEnrollment(Enrollment enrollment) {
+
+    }
+
+    public void cancelCheckInEnrollment(Enrollment enrollment) {
+
     }
 }

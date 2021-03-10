@@ -3,7 +3,6 @@ package com.seungmoo.studyolleh.domain;
 import com.seungmoo.studyolleh.account.UserAccount;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -36,7 +35,7 @@ public class Event {
     private String description;
 
     @Column(nullable = false)
-    private LocalDateTime createDateTime;
+    private LocalDateTime createdDateTime;
 
     @Column(nullable = false)
     private LocalDateTime endEnrollmentDateTime;

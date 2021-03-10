@@ -163,6 +163,9 @@ public class Study {
 
     public void addMember(Account account) {
         this.getMembers().add(account);
+        if (memberCount == null) {
+            memberCount = 1;
+        }
         this.memberCount++;
     }
 

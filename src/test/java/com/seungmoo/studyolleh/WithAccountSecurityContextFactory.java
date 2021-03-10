@@ -19,6 +19,8 @@ public class WithAccountSecurityContextFactory implements WithSecurityContextFac
 
     @Override
     public SecurityContext createSecurityContext(WithAccount withAccount) {
+
+
         String nickname = withAccount.value();
 
         // @BeforeEach 없이 그냥 여기서 계정까지 만들고
@@ -26,7 +28,8 @@ public class WithAccountSecurityContextFactory implements WithSecurityContextFac
         signUpForm.setNickname(nickname);
         signUpForm.setEmail(nickname + "@naver.com");
         signUpForm.setPassword("12345678");
-        accountService.processNewAccount(signUpForm);
+        if (accountRepository.findByNickname(nickname) == null)
+            accountService.processNewAccount(signUpForm);
 
         // 여기서 UserDetails Principal -> Authentication -> context에 셋팅
         UserDetails principal = accountService.loadUserByUsername(nickname);
