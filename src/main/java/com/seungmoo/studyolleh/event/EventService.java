@@ -5,8 +5,11 @@ import com.seungmoo.studyolleh.domain.Enrollment;
 import com.seungmoo.studyolleh.domain.Event;
 import com.seungmoo.studyolleh.domain.Study;
 import com.seungmoo.studyolleh.enrollment.EnrollmentRepository;
+import com.seungmoo.studyolleh.event.event.EnrollmentAcceptedEvent;
+import com.seungmoo.studyolleh.event.event.EnrollmentRejectedEvent;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +25,7 @@ public class EventService {
     private final EventRepository eventRepository;
     private final ModelMapper modelMapper;
     private final EnrollmentRepository enrollmentRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public Event createEvent(Event event, Study study, Account account) {
         event.setCreatedBy(account);
@@ -63,18 +67,20 @@ public class EventService {
     }
 
     public void acceptEnrollment(Event event, Enrollment enrollment) {
-
+        event.accept(enrollment);
+        eventPublisher.publishEvent(new EnrollmentAcceptedEvent(enrollment));
     }
 
     public void rejectEnrollment(Event event, Enrollment enrollment) {
-
+        event.reject(enrollment);
+        eventPublisher.publishEvent(new EnrollmentRejectedEvent(enrollment));
     }
 
     public void checkInEnrollment(Enrollment enrollment) {
-
+        enrollment.setAttended(true);
     }
 
     public void cancelCheckInEnrollment(Enrollment enrollment) {
-
+        enrollment.setAttended(false);
     }
 }

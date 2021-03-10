@@ -15,8 +15,11 @@ public class AccountFactory {
         Account whiteship = new Account();
         whiteship.setNickname(nickname);
         whiteship.setEmail(nickname + "@email.com");
-        accountRepository.save(whiteship);
-        return whiteship;
+        Account account = accountRepository.findByNickname(nickname);
+        if (account == null) {
+            return accountRepository.save(whiteship);
+        }
+        return account;
     }
 
 }

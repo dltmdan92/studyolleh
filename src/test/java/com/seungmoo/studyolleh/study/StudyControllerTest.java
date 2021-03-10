@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -24,6 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 
+@Transactional
 @SpringBootTest
 @AutoConfigureMockMvc
 class StudyControllerTest {
@@ -122,15 +124,13 @@ class StudyControllerTest {
         Account whiteship = new Account();
         whiteship.setNickname(nickname);
         whiteship.setEmail(nickname + "@email.com");
-        accountRepository.save(whiteship);
-        return whiteship;
+        return accountRepository.save(whiteship);
     }
 
     private Study createStudy(String path, Account manager) {
         Study study = new Study();
         study.setPath(path);
-        studyService.createNewStudy(study, manager);
-        return study;
+        return studyService.createNewStudy(study, manager);
     }
 
     @Test
