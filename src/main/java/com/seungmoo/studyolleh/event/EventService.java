@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Transactional
 @Service
@@ -28,7 +29,10 @@ public class EventService {
     public void updateEvent(Event event, EventForm eventForm) {
         modelMapper.map(eventForm, event);
         // TODO 모집 인원을 늘린 선착순 모임의 경우, 자동으로 추가 인원의 참가 신청을 확정 상태로 변경해야 한다.
-
         //eventRepository.save(event); --> 이거 할 필요가 없다. event 객체는 영속성 컨텍스트에서 persist 상태임.
+    }
+
+    public void deleteEvent(Event event) {
+        eventRepository.delete(event);
     }
 }

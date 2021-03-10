@@ -126,4 +126,32 @@ public class EventController {
         return "redirect:/study/" + study.getEncodedPath() +  "/events/" + event.getId();
     }
 
+    // 삭제 기능 DELETE Method
+    // RestAPI라면 DELETE Method를 사용할 수 있겠으나,
+    // Form Content (Web Service)에서는 FORM이 DELETE를 지원하지 않는다.
+    // 어쩔 수 없이 POST를 쓸 수 밖에 없다는 점...
+    // 물론 javascript로 호출하면 충분히 쓸 수 있다.
+
+    /**
+     * 이걸 DELETE Mapping으로 해볼까???
+     * 굳이 webService(form)에서 delete 메서드를 쓰고 싶다면
+     * 아래 정보를 spring-boot에 알려주도록 한다.
+     *
+     * # HTML <FORM>에서 th:method에서 PUT 또는 DELETE를 사용해서 보내는 _method를 사용해서  @PutMapping과 @DeleteMapping으로 요청을 맵핑.
+     * spring.mvc.hiddenmethod.filter.enabled=true
+     * @param account
+     * @param path
+     * @param id
+     * @return
+     */
+    @PostMapping("/event/{id}/delete")
+    public String cancelEvent(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id) {
+        Study study = studyService.getStudyToUpdateStatus(account, path);
+        eventService.deleteEvent(eventRepository.findById(id).orElseThrow());
+        return "redirect:/study/"+study.getEncodedPath()+"/events";
+    }
+
+    // 이렇게 충분히 바인딩 받을 수 도 있음!
+    //public String cancelEvent(@CurrentUser Account account, @PathVariable("path") Study study, @PathVariable("id") Event event) {}
+
 }
