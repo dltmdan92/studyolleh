@@ -1,7 +1,7 @@
 package com.seungmoo.studyolleh.notification;
 
 
-import com.seungmoo.studyolleh.domain.Account;
+import com.seungmoo.studyolleh.modules.account.Account;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;

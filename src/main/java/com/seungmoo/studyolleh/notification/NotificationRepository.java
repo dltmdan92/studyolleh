@@ -1,6 +1,6 @@
 package com.seungmoo.studyolleh.notification;
 
-import com.seungmoo.studyolleh.domain.Account;
+import com.seungmoo.studyolleh.modules.account.Account;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
