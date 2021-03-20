@@ -1,17 +1,19 @@
 package com.seungmoo.studyolleh.modules.account;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.seungmoo.studyolleh.modules.account.*;
+import com.seungmoo.studyolleh.infra.AbstractContainerBaseTest;
+import com.seungmoo.studyolleh.infra.MockMvcTest;
 import com.seungmoo.studyolleh.modules.tag.Tag;
-import com.seungmoo.studyolleh.modules.zone.Zone;
 import com.seungmoo.studyolleh.modules.tag.TagForm;
-import com.seungmoo.studyolleh.modules.zone.ZoneForm;
 import com.seungmoo.studyolleh.modules.tag.TagRepository;
+import com.seungmoo.studyolleh.modules.zone.Zone;
+import com.seungmoo.studyolleh.modules.zone.ZoneForm;
 import com.seungmoo.studyolleh.modules.zone.ZoneRepository;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
@@ -27,10 +29,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Transactional
-@SpringBootTest
-@AutoConfigureMockMvc
-class SettingsControllerTest {
+@MockMvcTest
+@DisplayName("계정/정보 셋팅 테스트")
+class SettingsControllerTest extends AbstractContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;

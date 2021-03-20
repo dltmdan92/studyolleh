@@ -1,33 +1,25 @@
 package com.seungmoo.studyolleh.modules.study;
 
-import com.seungmoo.studyolleh.modules.account.WithAccount;
-import com.seungmoo.studyolleh.modules.account.AccountRepository;
-import com.seungmoo.studyolleh.modules.account.AccountService;
-import com.seungmoo.studyolleh.modules.account.SignUpForm;
-import com.seungmoo.studyolleh.modules.account.Account;
+import com.seungmoo.studyolleh.infra.AbstractContainerBaseTest;
+import com.seungmoo.studyolleh.infra.MockMvcTest;
+import com.seungmoo.studyolleh.modules.account.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 
-@Transactional
-@SpringBootTest
-@AutoConfigureMockMvc
-class StudyControllerTest {
+@MockMvcTest
+class StudyControllerTest extends AbstractContainerBaseTest {
     @Autowired MockMvc mockMvc;
     @Autowired StudyService studyService;
     @Autowired StudyRepository studyRepository;

@@ -1,5 +1,7 @@
 package com.seungmoo.studyolleh.modules.main;
 
+import com.seungmoo.studyolleh.infra.AbstractContainerBaseTest;
+import com.seungmoo.studyolleh.infra.MockMvcTest;
 import com.seungmoo.studyolleh.modules.account.AccountRepository;
 import com.seungmoo.studyolleh.modules.account.AccountService;
 import com.seungmoo.studyolleh.modules.account.SignUpForm;
@@ -8,8 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -20,9 +20,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-class MainControllerTest {
+@MockMvcTest
+class MainControllerTest extends AbstractContainerBaseTest {
 
     // JUnit에서는 private final로 주입 받을 수 없다.
     @Autowired

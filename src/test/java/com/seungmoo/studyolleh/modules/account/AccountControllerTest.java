@@ -1,5 +1,7 @@
 package com.seungmoo.studyolleh.modules.account;
 
+import com.seungmoo.studyolleh.infra.AbstractContainerBaseTest;
+import com.seungmoo.studyolleh.infra.MockMvcTest;
 import com.seungmoo.studyolleh.infra.mail.EmailMessage;
 import com.seungmoo.studyolleh.infra.mail.EmailService;
 import org.junit.jupiter.api.DisplayName;
@@ -8,8 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,10 +26,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Transactional
-@SpringBootTest
-@AutoConfigureMockMvc
-class AccountControllerTest {
+@MockMvcTest
+@DisplayName("회원 관리 테스트")
+class AccountControllerTest extends AbstractContainerBaseTest {
     @Autowired
     private MockMvc mockMvc;
 

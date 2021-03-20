@@ -1,19 +1,17 @@
 package com.seungmoo.studyolleh.modules.event;
 
-import com.seungmoo.studyolleh.modules.account.WithAccount;
+import com.seungmoo.studyolleh.infra.AbstractContainerBaseTest;
+import com.seungmoo.studyolleh.infra.MockMvcTest;
+import com.seungmoo.studyolleh.modules.account.Account;
 import com.seungmoo.studyolleh.modules.account.AccountFactory;
 import com.seungmoo.studyolleh.modules.account.AccountRepository;
-import com.seungmoo.studyolleh.modules.account.Account;
+import com.seungmoo.studyolleh.modules.account.WithAccount;
 import com.seungmoo.studyolleh.modules.study.Study;
 import com.seungmoo.studyolleh.modules.study.StudyFactory;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -23,11 +21,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Slf4j
-@Transactional
-@SpringBootTest
-@AutoConfigureMockMvc
-class EventControllerTest {
+@MockMvcTest
+class EventControllerTest extends AbstractContainerBaseTest {
 
     @Autowired MockMvc mockMvc;
     @Autowired StudyFactory studyFactory;
