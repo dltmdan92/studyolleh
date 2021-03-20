@@ -26,7 +26,7 @@ import java.util.Set;
 @Slf4j
 @Async
 @Component
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class StudyEventListener {
 
