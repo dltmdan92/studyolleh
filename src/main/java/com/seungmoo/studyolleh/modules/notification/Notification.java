@@ -27,7 +27,7 @@ public class Notification {
     @ManyToOne
     private Account account;
 
-    private LocalDateTime localDateTime;
+    private LocalDateTime createdDateTime;
 
     @Enumerated(EnumType.STRING)
     private NotificationType notificationType;
