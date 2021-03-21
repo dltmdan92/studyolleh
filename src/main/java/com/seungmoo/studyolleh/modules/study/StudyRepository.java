@@ -29,9 +29,12 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
 
     Study findStudyOnlyByPath(String path);
 
-    @EntityGraph(attributePaths = {"tags", "zones"}, type = EntityGraph.EntityGraphType.FETCH)
+    // EntityGrap의 기본 타입 전략이 FETCH 이므로 생략 가능하다.
+    //@EntityGraph(attributePaths = {"tags", "zones"}, type = EntityGraph.EntityGraphType.FETCH)
+    @EntityGraph(attributePaths = {"tags", "zones"})
     Study findStudyWithTagsAndZonesById(Long id);
 
-    @EntityGraph(attributePaths = {"managers", "members"}, type = EntityGraph.EntityGraphType.FETCH)
+    //@EntityGraph(attributePaths = {"managers", "members"}, type = EntityGraph.EntityGraphType.FETCH)
+    @EntityGraph(attributePaths = {"managers", "members"})
     Study findStudyWithManagersAndMembersById(Long id);
 }
