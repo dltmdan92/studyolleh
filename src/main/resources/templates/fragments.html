@@ -70,7 +70,8 @@
             <li class="nav-item" sec:authorize="isAuthenticated()">
                 <a class="nav-link" href="#" th:href="@{/notifications}">
                     <!-- 벨 모양 이모티콘 -->
-                    <i class="fa fa-bell-o"></i>
+                    <i th:if="${!hasNotification}" class="fa fa-bell-o" aria-hidden="true"></i>
+                    <span class="text-info" th:if="${hasNotification}"><i class="fa fa-bell-o" aria-hidden="true"></i></span>
                 </a>
             </li>
             <li class="nav-item" sec:authorize="isAuthenticated()">
