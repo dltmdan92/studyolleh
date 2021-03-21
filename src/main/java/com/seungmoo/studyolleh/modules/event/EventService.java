@@ -4,6 +4,7 @@ import com.seungmoo.studyolleh.modules.account.Account;
 import com.seungmoo.studyolleh.modules.event.event.EnrollmentAcceptedEvent;
 import com.seungmoo.studyolleh.modules.event.event.EnrollmentRejectedEvent;
 import com.seungmoo.studyolleh.modules.study.Study;
+import com.seungmoo.studyolleh.modules.study.event.StudyUpdateEvent;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.ApplicationEventPublisher;
@@ -26,17 +27,24 @@ public class EventService {
         event.setCreatedBy(account);
         event.setCreatedDateTime(LocalDateTime.now());
         event.setStudy(study);
+        eventPublisher.publishEvent(new StudyUpdateEvent(event.getStudy(),
+                "'" + event.getTitle() + "' 모임을 만들었습니다."));
         return eventRepository.save(event);
     }
 
     public void updateEvent(Event event, EventForm eventForm) {
         modelMapper.map(eventForm, event);
+        event.acceptWaitingList();
         // TODO 모집 인원을 늘린 선착순 모임의 경우, 자동으로 추가 인원의 참가 신청을 확정 상태로 변경해야 한다.
         //eventRepository.save(event); --> 이거 할 필요가 없다. event 객체는 영속성 컨텍스트에서 persist 상태임.
+        eventPublisher.publishEvent(new StudyUpdateEvent(event.getStudy(),
+                "'" + event.getTitle() + "' 모임 정보를 수정했으니 확인하세요."));
     }
 
     public void deleteEvent(Event event) {
         eventRepository.delete(event);
+        eventPublisher.publishEvent(new StudyUpdateEvent(event.getStudy(),
+                "'" + event.getTitle() + "' 모임을 취소했습니다."));
     }
 
     public void newEnrollment(Event event, Account account) {
