@@ -1,6 +1,9 @@
 package com.seungmoo.studyolleh.modules.study;
 
 import com.querydsl.jpa.JPQLQuery;
+import com.seungmoo.studyolleh.modules.account.QAccount;
+import com.seungmoo.studyolleh.modules.tag.QTag;
+import com.seungmoo.studyolleh.modules.zone.QZone;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
 import java.util.List;
@@ -32,10 +35,22 @@ public class StudyRepositoryExtensionImpl extends QuerydslRepositorySupport impl
     @Override
     public List<Study> findByKeyword(String keyword) {
         QStudy study = QStudy.study;
+
+        // tag, zone 등 을 leftJoin해서 안 갖고 오면,
+        // study entity에서 tag, zone을 호출할 때 쿼리를 또 호출 하게 된다 --> N + 1 Select 문제 발생!!!
+        // QueryDsl에서는 leftJoin, fetchJoin을 통해서 Fetching을 한다. --> N + 1 Select 문제 해결
         JPQLQuery<Study> query = from(study).where(study.published.isTrue()
                 .and(study.title.containsIgnoreCase(keyword))
                 .or(study.tags.any().title.containsIgnoreCase(keyword))
-                .or(study.zones.any().localNameOfCity.containsIgnoreCase(keyword)));
+                .or(study.zones.any().localNameOfCity.containsIgnoreCase(keyword)))
+                // 여기서 leftJoin만 해주고(left outer join으로 먹힘), fetchJoin()을 호출 안해주면
+                // left outer join은 하되, 데이터는 select 절에서 안 갖고 온다. --> 그러므로 fetchJoin() 호출 해주자.
+                .leftJoin(study.tags, QTag.tag).fetchJoin() // fetchJoin : leftJoin에 엮이는 오른쪽 테이블의 데이터 또한 가져 온다.
+                .leftJoin(study.zones, QZone.zone).fetchJoin() // fetchJoin : leftJoin에 엮이는 오른쪽 테이블의 데이터 또한 가져 온다.
+                .leftJoin(study.members, QAccount.account).fetchJoin()
+                .distinct(); // distinct를 통해 중복되는 데이터는 결과 중에서 없앤다.
+        // distinct 를 해도 원래는 query의 결과는 여러개 이다. --> distinct를 통해서 전체 데이터에 대한 transform을 해줄 뿐이다. (전체 데이터는 원래대로 뽑힌다.)
+        // distinct 말고 projection 등의 튜닝 방법이 있긴 하다. but 좀 어렵긴 하다.
 
         // fetch를 쓰면 데이터를 가져올 수 있다.
         //query.fetchResults() --> 요거는 페이징 처리할 때 주로 씀
