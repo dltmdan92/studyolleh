@@ -6,13 +6,18 @@ import com.seungmoo.studyolleh.modules.study.event.StudyUpdateEvent;
 import com.seungmoo.studyolleh.modules.study.form.StudyDescriptionForm;
 import com.seungmoo.studyolleh.modules.study.form.StudyForm;
 import com.seungmoo.studyolleh.modules.tag.Tag;
+import com.seungmoo.studyolleh.modules.tag.TagRepository;
 import com.seungmoo.studyolleh.modules.zone.Zone;
 import lombok.RequiredArgsConstructor;
+import net.bytebuddy.utility.RandomString;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashSet;
+import java.util.Optional;
 
 @Transactional
 @Service
@@ -22,6 +27,7 @@ public class StudyService {
     private final StudyRepository studyRepository;
     private final ModelMapper modelMapper;
     private final ApplicationEventPublisher eventPublisher;
+    private final TagRepository tagRepository;
 
     public Study createNewStudy(Study study, Account account) {
         Study newStudy = studyRepository.save(study);
@@ -171,5 +177,28 @@ public class StudyService {
         Study study = studyRepository.findByPath(path);
         checkIfExistingStudy(path, study);
         return study;
+    }
+
+    public void generateTestStudies(Account account) {
+        /**
+         * 이렇게 One 트랜잭션 메소드 안에 for loop 이 있을 경우
+         * createNewStudy의 save 메소드가 일괄로 돌고
+         * 그 다음에 study_tags와 study_managers에 insert문이 같이 일괄로 돌아간다.
+         */
+        for (int i = 0; i < 30; i++) {
+            String randomValue = RandomString.make(5);
+            Study study = Study.builder()
+                    .title("테스트 스터디 " + randomValue)
+                    .path("test-" + randomValue)
+                    .shortDescription("테스트용 스터디 입니다.")
+                    .fullDescription("test")
+                    .tags(new HashSet<>())
+                    .managers(new HashSet<>())
+                    .build();
+            study.publish();
+            Study newStudy = this.createNewStudy(study, account);
+            Optional<Tag> jpa = tagRepository.findByTitle("JPA");
+            jpa.ifPresent(tag -> newStudy.getTags().add(tag));
+        }
     }
 }

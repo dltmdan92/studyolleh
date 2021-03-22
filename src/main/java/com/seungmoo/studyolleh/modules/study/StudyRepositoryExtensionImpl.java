@@ -1,12 +1,14 @@
 package com.seungmoo.studyolleh.modules.study;
 
+import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.JPQLQuery;
 import com.seungmoo.studyolleh.modules.account.QAccount;
 import com.seungmoo.studyolleh.modules.tag.QTag;
 import com.seungmoo.studyolleh.modules.zone.QZone;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
-
-import java.util.List;
 
 /**
  * JPA에서 interface의 구현체를 만드는 경우
@@ -30,10 +32,11 @@ public class StudyRepositoryExtensionImpl extends QuerydslRepositorySupport impl
      * 하지만 QueryDsl에서는 그 방법이 조금 다름!!
      *
      * @param keyword
+     * @param pageable
      * @return
      */
     @Override
-    public List<Study> findByKeyword(String keyword) {
+    public Page<Study> findByKeyword(String keyword, Pageable pageable) {
         QStudy study = QStudy.study;
 
         // tag, zone 등 을 leftJoin해서 안 갖고 오면,
@@ -52,8 +55,13 @@ public class StudyRepositoryExtensionImpl extends QuerydslRepositorySupport impl
         // distinct 를 해도 원래는 query의 결과는 여러개 이다. --> distinct를 통해서 전체 데이터에 대한 transform을 해줄 뿐이다. (전체 데이터는 원래대로 뽑힌다.)
         // distinct 말고 projection 등의 튜닝 방법이 있긴 하다. but 좀 어렵긴 하다.
 
+        // QueryDsl에서 pageable을 쓸 수 있는 방식이다. --> 페이징 정보를 포함해서 result 쓰려면 fetchResults()
+        JPQLQuery<Study> studyJPQLQuery = getQuerydsl().applyPagination(pageable, query);
+
         // fetch를 쓰면 데이터를 가져올 수 있다.
         //query.fetchResults() --> 요거는 페이징 처리할 때 주로 씀
-        return query.fetch();
+        //return query.fetch();
+        QueryResults<Study> studyQueryResults = studyJPQLQuery.fetchResults();// fetchResults() 페이징 정보까지 갖고 온다.
+        return new PageImpl<>(studyQueryResults.getResults(), pageable, studyQueryResults.getTotal());
     }
 }

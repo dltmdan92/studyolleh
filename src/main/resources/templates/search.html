@@ -6,21 +6,21 @@
 <div class="container">
     <div class="py-5 text-center">
         <!-- lists : 타임리프에서 제공해주는 List 관련 유틸 -->
-        <p class="lead" th:if="${#lists.isEmpty(studyList) == 0}">
+        <p class="lead" th:if="${studyPage.getTotalElements() == 0}">
             <strong th:text="${keyword}" id="keyword" class="context"></strong>에 해당하는 스터디가 없습니다.
         </p>
-        <p class="lead" th:if="${!#lists.isEmpty(studyList) > 0}">
+        <p class="lead" th:if="${studyPage.getTotalElements() > 0}">
             <strong th:text="${keyword}" id="keyword" class="context"></strong>에 해당하는 스터디를
-            <span th:text="${studyList.size()}"></span>개
+            <span th:text="${studyPage.getTotalElements()}"></span>개
             찾았습니다.
         </p>
     </div>
-    <!--<div class="row justify-content-center">
+    <div class="row justify-content-center">
         <div th:replace="fragments.html :: study-list (studyList=${studyPage.getContent()})"></div>
-    </div>-->
+    </div>
     <div class="row justify-content-center">
         <div class="col-sm-10">
-            <!--<nav>
+            <nav>
                 <ul class="pagination justify-content-center">
                     <li class="page-item" th:classappend="${!studyPage.hasPrevious()}? disabled">
                         <a th:href="@{'/search/study?keyword=' + ${keyword} + '&sort=' + ${sortProperty} + ',desc&page=' + ${studyPage.getNumber() - 1}}"
@@ -40,7 +40,7 @@
                         </a>
                     </li>
                 </ul>
-            </nav>-->
+            </nav>
         </div>
     </div>
 </div>
