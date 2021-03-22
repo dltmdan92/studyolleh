@@ -4,8 +4,10 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Transactional(readOnly = true)
-public interface StudyRepository extends JpaRepository<Study, Long> {
+public interface StudyRepository extends JpaRepository<Study, Long>, StudyRepositoryExtension {
     boolean existsByPath(String path);
 
     // LOAD 타입 : 우리가 명시한 Entity 데이터들은 EAGER 모드로 갖고오고, 나머지는 기본 FetchType에 따른다.
@@ -37,4 +39,5 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
     //@EntityGraph(attributePaths = {"managers", "members"}, type = EntityGraph.EntityGraphType.FETCH)
     @EntityGraph(attributePaths = {"managers", "members"})
     Study findStudyWithManagersAndMembersById(Long id);
+
 }
