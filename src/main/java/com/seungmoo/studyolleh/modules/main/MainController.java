@@ -1,7 +1,9 @@
 package com.seungmoo.studyolleh.modules.main;
 
 import com.seungmoo.studyolleh.modules.account.Account;
+import com.seungmoo.studyolleh.modules.account.AccountRepository;
 import com.seungmoo.studyolleh.modules.account.CurrentUser;
+import com.seungmoo.studyolleh.modules.event.EnrollmentRepository;
 import com.seungmoo.studyolleh.modules.notification.NotificationRepository;
 import com.seungmoo.studyolleh.modules.study.Study;
 import com.seungmoo.studyolleh.modules.study.StudyRepository;
@@ -20,13 +22,25 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MainController {
 
-    private final NotificationRepository notificationRepository;
     private final StudyRepository studyRepository;
+    private final AccountRepository accountRepository;
+    private final EnrollmentRepository enrollmentRepository;
 
     @GetMapping("/")
     public String home(@CurrentUser Account account, Model model) {
+
         if (account != null) {
-            model.addAttribute(account);
+            Account accountLoaded = accountRepository.findAccountWithTagsAndZonesById(account.getId());
+            model.addAttribute(accountLoaded);
+            model.addAttribute("enrollmentList", enrollmentRepository.findByAccountAndAcceptedOrderByEnrolledAtDesc(accountLoaded, true));
+            model.addAttribute("studyList", studyRepository.findByAccount(
+                    accountLoaded.getTags(),
+                    accountLoaded.getZones()));
+            model.addAttribute("studyManagerOf",
+                    studyRepository.findFirst5ByManagersContainingAndClosedOrderByPublishedDateTimeDesc(account, false));
+            model.addAttribute("studyMemberOf",
+                    studyRepository.findFirst5ByMembersContainingAndClosedOrderByPublishedDateTimeDesc(account, false));
+            return "index-after-login";
         }
 
         // 이걸 모든 request에 담아내는 방법은?? --> Spring MVC handler Interceptor를 사용하자
@@ -35,6 +49,7 @@ public class MainController {
         long count = notificationRepository.countByAccountAndChecked(account, false);
         model.addAttribute("hasNotification", count > 0);
         */
+        model.addAttribute("studyList", studyRepository.findFirst9ByPublishedAndClosedOrderByPublishedDateTimeDesc(true, false));
         return "index";
     }
 

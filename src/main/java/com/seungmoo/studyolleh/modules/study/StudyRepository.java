@@ -1,10 +1,13 @@
 package com.seungmoo.studyolleh.modules.study;
 
+import com.seungmoo.studyolleh.modules.tag.Tag;
+import com.seungmoo.studyolleh.modules.zone.Zone;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Transactional(readOnly = true)
 public interface StudyRepository extends JpaRepository<Study, Long>, StudyRepositoryExtension {

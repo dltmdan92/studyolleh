@@ -1,14 +1,21 @@
 package com.seungmoo.studyolleh.modules.study;
 
 import com.querydsl.core.QueryResults;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.JPQLQuery;
+import com.seungmoo.studyolleh.modules.account.Account;
 import com.seungmoo.studyolleh.modules.account.QAccount;
 import com.seungmoo.studyolleh.modules.tag.QTag;
+import com.seungmoo.studyolleh.modules.tag.Tag;
 import com.seungmoo.studyolleh.modules.zone.QZone;
+import com.seungmoo.studyolleh.modules.zone.Zone;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * JPA에서 interface의 구현체를 만드는 경우
@@ -63,5 +70,59 @@ public class StudyRepositoryExtensionImpl extends QuerydslRepositorySupport impl
         //return query.fetch();
         QueryResults<Study> studyQueryResults = studyJPQLQuery.fetchResults();// fetchResults() 페이징 정보까지 갖고 온다.
         return new PageImpl<>(studyQueryResults.getResults(), pageable, studyQueryResults.getTotal());
+    }
+
+    @Override
+    public List<Study> findFirst5ByManagersContainingAndClosedOrderByPublishedDateTimeDesc(Account account, Boolean closed) {
+        QStudy study = QStudy.study;
+
+        JPQLQuery<Study> studyJPQLQuery = from(study)
+                .where(study.managers.any().eq(account).and(study.closed.eq(closed)))
+                .offset(0).limit(5);
+
+        return studyJPQLQuery.fetch();
+    }
+
+    @Override
+    public List<Study> findFirst5ByMembersContainingAndClosedOrderByPublishedDateTimeDesc(Account account, boolean closed) {
+        QStudy study = QStudy.study;
+
+        JPQLQuery<Study> studyJPQLQuery = from(study)
+                .where(study.members.any().eq(account).and(study.closed.eq(closed)))
+                .offset(0).limit(5);
+
+        return studyJPQLQuery.fetch();
+    }
+
+    @Override
+    public List<Study> findFirst9ByPublishedAndClosedOrderByPublishedDateTimeDesc(boolean published, boolean closed) {
+        QStudy study = QStudy.study;
+
+        JPQLQuery<Study> studyJPQLQuery = from(study)
+                .where(study.published.eq(published).and(study.closed.eq(closed)))
+                .leftJoin(study.tags, QTag.tag).fetchJoin()
+                .leftJoin(study.zones, QZone.zone).fetchJoin()
+                .offset(0).limit(9);
+
+        return studyJPQLQuery.fetch();
+    }
+
+    @Override
+    public List<Study> findByAccount(Set<Tag> tags, Set<Zone> zones) {
+        QStudy study = QStudy.study;
+
+        JPQLQuery<Study> studyJPQLQuery = from(study)
+                .where(study.published.isTrue()
+                        .and(study.closed.isFalse())
+                        .and(study.zones.any().in(zones))
+                        .and(study.tags.any().in(tags)))
+                .leftJoin(study.tags, QTag.tag).fetchJoin()
+                .leftJoin(study.zones, QZone.zone).fetchJoin()
+                .orderBy(study.publishedDateTime.desc())
+                // left Join해서 fetch해올 때는 중복데이터가 생길 수 있음! --> distinct 처리 해주자.
+                .distinct()
+                .limit(9);
+
+        return studyJPQLQuery.fetch();
     }
 }
