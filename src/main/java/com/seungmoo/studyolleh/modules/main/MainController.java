@@ -51,6 +51,7 @@ public class MainController {
         Page<Study> studyPage = studyRepository.findByKeyword(keyword, pageable);
         model.addAttribute("studyPage", studyPage); // Collection의 경우는 이름을 주고 넘기자.. Collection의 attr 이름 없으면 무시한다.
         model.addAttribute("keyword", keyword);
+        model.addAttribute("sortProperty", pageable.getSort().toString().contains("publishedDateTime") ? "publishedDateTime" : "memberCount");
         return "search";
     }
 }
